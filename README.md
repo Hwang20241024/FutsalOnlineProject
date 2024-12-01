@@ -22,25 +22,22 @@
 ## 2. gitBash 
 
 ```bash
+# 처음 접속시
+git clone "복제 URL" 
+
 # 개인 브런치 생성법.
 git checkout -b "개인브런치 이름"
 
 ## 작업완료후 병합하는법
-# 서브브런치로 이동
+# 작업 후 병합 준비
 git checkout "서브브런치-이름"
-
-# 개인 브런치에서 최신 상태로 업데이트
 git pull origin "서브브런치-이름"
-
-# 개인 브런치 병합
-git checkout "서브브런치-이름"
 git merge "개인브런치-이름"
 
+# 변경 사항 커밋 및 푸시:
 git add .
 git commit -m "메시지 내용."
-
-# 병합된 서브 브런치 푸시
-git push origin sub-branch
+git push origin "서브브런치-이름"
 
 # 만든 개인용 브런치 삭제
 git branch -d "개인브런치-이름"
