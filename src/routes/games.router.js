@@ -33,14 +33,20 @@ router.post("/games", authMiddleware, async (req, res, next) => {
         },
       });
       return res.status(401).json({
-        message: "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
+        message:
+          "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
       });
     }
 
     //팀 구성 체크
-    if (myTeam.inventoryId1 === null || myTeam.inventoryId2 === null || myTeam.inventoryId3 === null)
+    if (
+      myTeam.inventoryId1 === null ||
+      myTeam.inventoryId2 === null ||
+      myTeam.inventoryId3 === null
+    )
       return res.status(401).json({
-        message: "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
+        message:
+          "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
       });
 
     //진행 카드 조회
@@ -67,7 +73,11 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       where: {
         userId: 2,
         inventoryId: {
-          in: [enemyTeam.inventoryId1, enemyTeam.inventoryId2, enemyTeam.inventoryId3],
+          in: [
+            enemyTeam.inventoryId1,
+            enemyTeam.inventoryId2,
+            enemyTeam.inventoryId3,
+          ],
         },
       },
       include: { cards: true },
@@ -94,9 +104,27 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     const attackCount = 10;
     //나의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (isSuccess(myPlayers[0].cards.pass + myPlayers[0].upgrade, myPlayers[0].cards.sight + myPlayers[0].upgrade, "A")) {
-        if (isSuccess(myPlayers[1].cards.speed + myPlayers[1].upgrade, myPlayers[1].cards.shoot + myPlayers[1].upgrade, "A")) {
-          if (isSuccess(enemyPlayers[2].cards.tackle + enemyPlayers[2].upgrade, enemyPlayers[2].cards.defence + enemyPlayers[2].upgrade, "D")) {
+      if (
+        isSuccess(
+          myPlayers[0].cards.pass + myPlayers[0].upgrade,
+          myPlayers[0].cards.sight + myPlayers[0].upgrade,
+          "A",
+        )
+      ) {
+        if (
+          isSuccess(
+            myPlayers[1].cards.speed + myPlayers[1].upgrade,
+            myPlayers[1].cards.shoot + myPlayers[1].upgrade,
+            "A",
+          )
+        ) {
+          if (
+            isSuccess(
+              enemyPlayers[2].cards.tackle + enemyPlayers[2].upgrade,
+              enemyPlayers[2].cards.defence + enemyPlayers[2].upgrade,
+              "D",
+            )
+          ) {
             myScore++;
           }
         }
@@ -104,9 +132,27 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     }
     //상대방의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (isSuccess(enemyPlayers[0].cards.pass + enemyPlayers[0].upgrade, enemyPlayers[0].cards.sight + enemyPlayers[0].upgrade, "A")) {
-        if (isSuccess(enemyPlayers[1].cards.speed + enemyPlayers[1].upgrade, enemyPlayers[1].cards.shoot + enemyPlayers[1].upgrade, "A")) {
-          if (isSuccess(myPlayers[2].cards.tackle + myPlayers[2].upgrade, myPlayers[2].cards.defence + myPlayers[2].upgrade, "D")) {
+      if (
+        isSuccess(
+          enemyPlayers[0].cards.pass + enemyPlayers[0].upgrade,
+          enemyPlayers[0].cards.sight + enemyPlayers[0].upgrade,
+          "A",
+        )
+      ) {
+        if (
+          isSuccess(
+            enemyPlayers[1].cards.speed + enemyPlayers[1].upgrade,
+            enemyPlayers[1].cards.shoot + enemyPlayers[1].upgrade,
+            "A",
+          )
+        ) {
+          if (
+            isSuccess(
+              myPlayers[2].cards.tackle + myPlayers[2].upgrade,
+              myPlayers[2].cards.defence + myPlayers[2].upgrade,
+              "D",
+            )
+          ) {
             enemyScore++;
           }
         }
