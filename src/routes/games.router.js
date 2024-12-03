@@ -8,7 +8,7 @@ const router = express.Router();
 /*** 축구 게임 API */
 router.post("/games", authMiddleware, async (req, res, next) => {
   try {
-    const userId = req.user;
+    const userId = req.user.userId;
 
     /*****
      *  데이터 검사
@@ -33,20 +33,14 @@ router.post("/games", authMiddleware, async (req, res, next) => {
         },
       });
       return res.status(401).json({
-        message:
-          "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
+        message: "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
       });
     }
 
     //팀 구성 체크
-    if (
-      myTeam.inventoryId1 === null ||
-      myTeam.inventoryId2 === null ||
-      myTeam.inventoryId3 === null
-    )
+    if (myTeam.inventoryId1 === null || myTeam.inventoryId2 === null || myTeam.inventoryId3 === null)
       return res.status(401).json({
-        message:
-          "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
+        message: "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
       });
 
     //진행 카드 조회
@@ -73,11 +67,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       where: {
         userId: 2,
         inventoryId: {
-          in: [
-            enemyTeam.inventoryId1,
-            enemyTeam.inventoryId2,
-            enemyTeam.inventoryId3,
-          ],
+          in: [enemyTeam.inventoryId1, enemyTeam.inventoryId2, enemyTeam.inventoryId3],
         },
       },
       include: { cards: true },
@@ -102,53 +92,21 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     let myScore = 0;
     let enemyScore = 0;
     const attackCount = 10;
-
     //나의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (
-        isSuccess(
-          myPlayers[0].cards.pass + myPlayers[0].upgrade,
-          myPlayers[0].cards.sight + myPlayers[0].upgrade,
-        )
-      ) {
-        if (
-          isSuccess(
-            myPlayers[1].cards.speed + myPlayers[1].upgrade,
-            myPlayers[1].cards.shoot + myPlayers[1].upgrade,
-          )
-        ) {
-          if (
-            isSuccess(
-              enemyPlayers[2].cards.tackle + enemyPlayers[2].upgrade,
-              enemyPlayers[2].cards.defence + enemyPlayers[2].upgrade,
-            )
-          ) {
+      if (isSuccess(myPlayers[0].cards.pass + myPlayers[0].upgrade, myPlayers[0].cards.sight + myPlayers[0].upgrade, "A")) {
+        if (isSuccess(myPlayers[1].cards.speed + myPlayers[1].upgrade, myPlayers[1].cards.shoot + myPlayers[1].upgrade, "A")) {
+          if (isSuccess(enemyPlayers[2].cards.tackle + enemyPlayers[2].upgrade, enemyPlayers[2].cards.defence + enemyPlayers[2].upgrade, "D")) {
             myScore++;
           }
         }
       }
     }
-
     //상대방의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (
-        isSuccess(
-          enemyPlayers[0].pass + enemyPlayers[0].upgrade,
-          enemyPlayers[0].sight + enemyPlayers[0].upgrade,
-        )
-      ) {
-        if (
-          isSuccess(
-            enemyPlayers[1].speed + enemyPlayers[1].upgrade,
-            enemyPlayers[1].shoot + enemyPlayers[1].upgrade,
-          )
-        ) {
-          if (
-            isSuccess(
-              myPlayers[2].tackle + myPlayers[2].upgrade,
-              myPlayers[2].defence + myPlayers[2].upgrade,
-            )
-          ) {
+      if (isSuccess(enemyPlayers[0].cards.pass + enemyPlayers[0].upgrade, enemyPlayers[0].cards.sight + enemyPlayers[0].upgrade, "A")) {
+        if (isSuccess(enemyPlayers[1].cards.speed + enemyPlayers[1].upgrade, enemyPlayers[1].cards.shoot + enemyPlayers[1].upgrade, "A")) {
+          if (isSuccess(myPlayers[2].cards.tackle + myPlayers[2].upgrade, myPlayers[2].cards.defence + myPlayers[2].upgrade, "D")) {
             enemyScore++;
           }
         }
@@ -161,11 +119,11 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     let isDraw = false; //무승부 여부
 
     if (myScore > enemyScore) {
-      messageStr = "게임에서 승리하셨습니다.";
+      messageStr = `'${myScore} - ${enemyScore}'로 승리하셨습니다.`;
     } else if (myScore < enemyScore) {
-      messageStr = "게임에서 패배하셨습니다.";
+      messageStr = `'${myScore} - ${enemyScore}'로 패배하셨습니다.`;
     } else {
-      messageStr = "무승부로 게임이 종료되었습니다.";
+      messageStr = `'${myScore} - ${enemyScore}'로 무승부 입니다.`;
       isDraw = true;
       resPointStr = "0 점";
     }
@@ -208,11 +166,15 @@ router.post("/games", authMiddleware, async (req, res, next) => {
 });
 
 //공격 기회 처리
-const isSuccess = (status1, status2) => {
+const isSuccess = (status1, status2, type) => {
   let res = false;
-
   const randomValue = Math.random() * 100;
-  if (randomValue < (status1 + status2) / 2) res = true;
+  if ("A" === type) {
+    if (randomValue < (status1 + status2) / 2) res = true;
+  } else {
+    if (randomValue >= (status1 + status2) / 2) res = true;
+  }
+
   return res;
 };
 
