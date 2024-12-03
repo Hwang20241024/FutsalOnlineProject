@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
-import Prisma from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import authMiddleware from "../middlewares/authHandler.js";
 
 const router = express.Router();
@@ -8,7 +8,7 @@ const router = express.Router();
 /*** 축구 게임 API */
 router.post("/games", authMiddleware, async (req, res, next) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user;
 
     /*****
      *  데이터 검사
@@ -49,14 +49,39 @@ router.post("/games", authMiddleware, async (req, res, next) => {
           "팀 구성이 이루어지지 않았습니다. 팀 구성 후 다시 시도 바랍니다.",
       });
 
-    const myPlayers = await prisma.inventory.findMany();
+    //진행 카드 조회
+    const myPlayers = await prisma.inventory.findMany({
+      where: {
+        userId,
+        inventoryId: {
+          in: [myTeam.inventoryId1, myTeam.inventoryId2, myTeam.inventoryId3],
+        },
+      },
+      include: { cards: true },
+    });
+
     /*****
      * 1. 매치 메이킹
      */
-    // const myPlayers = {};
+    // const enemyUser = {};
     // const enemyPlayers = {};
 
+    //테스트용 조회 입니다.
     const enemyUser = await prisma.users.findFirst({ where: { userId: 2 } });
+    const enemyTeam = await prisma.team.findFirst({ where: { userId: 2 } });
+    const enemyPlayers = await prisma.inventory.findMany({
+      where: {
+        userId: 2,
+        inventoryId: {
+          in: [
+            enemyTeam.inventoryId1,
+            enemyTeam.inventoryId2,
+            enemyTeam.inventoryId3,
+          ],
+        },
+      },
+      include: { cards: true },
+    });
 
     /*****
      * 2. 경기 진행
@@ -80,9 +105,24 @@ router.post("/games", authMiddleware, async (req, res, next) => {
 
     //나의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (isSuccess(myPlayers.pass, myPlayers.sight)) {
-        if (isSuccess(myPlayers.speed, myPlayers.shoot)) {
-          if (isSuccess(enemyTeam.tackle, enemyTeam.deffence)) {
+      if (
+        isSuccess(
+          myPlayers[0].cards.pass + myPlayers[0].upgrade,
+          myPlayers[0].cards.sight + myPlayers[0].upgrade,
+        )
+      ) {
+        if (
+          isSuccess(
+            myPlayers[1].cards.speed + myPlayers[1].upgrade,
+            myPlayers[1].cards.shoot + myPlayers[1].upgrade,
+          )
+        ) {
+          if (
+            isSuccess(
+              enemyPlayers[2].cards.tackle + enemyPlayers[2].upgrade,
+              enemyPlayers[2].cards.defence + enemyPlayers[2].upgrade,
+            )
+          ) {
             myScore++;
           }
         }
@@ -91,9 +131,24 @@ router.post("/games", authMiddleware, async (req, res, next) => {
 
     //상대방의 공격
     for (let i = 0; i < attackCount; i++) {
-      if (isSuccess(enemyTeam.pass, enemyTeam.sight)) {
-        if (isSuccess(enemyTeam.speed, enemyTeam.shoot)) {
-          if (isSuccess(myPlayers.tackle, myPlayers.deffence)) {
+      if (
+        isSuccess(
+          enemyPlayers[0].pass + enemyPlayers[0].upgrade,
+          enemyPlayers[0].sight + enemyPlayers[0].upgrade,
+        )
+      ) {
+        if (
+          isSuccess(
+            enemyPlayers[1].speed + enemyPlayers[1].upgrade,
+            enemyPlayers[1].shoot + enemyPlayers[1].upgrade,
+          )
+        ) {
+          if (
+            isSuccess(
+              myPlayers[2].tackle + myPlayers[2].upgrade,
+              myPlayers[2].defence + myPlayers[2].upgrade,
+            )
+          ) {
             enemyScore++;
           }
         }
@@ -116,20 +171,28 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     }
 
     // 경기 결과 등록
-    const matchresult = prisma.matchResult.create({
-      data: {
-        userId1: myUser.userId,
-        userId2: enemyUser.userId,
-        score1: myScore,
-        score2: enemyScore,
-      },
-    });
+    prisma.$transaction(
+      async (tx) => {
+        const matchresult = await prisma.matchResult.create({
+          data: {
+            userId1: myUser.userId,
+            userId2: enemyUser.userId,
+            score1: myScore,
+            score2: enemyScore,
+          },
+        });
 
-    if (!isDraw) {
-      /*****
-       * 3. 승리/패배 시 게임 점수 조정 기능
-       */
-    }
+        if (!isDraw) {
+          /*****
+           * 3. 승리/패배 시 게임 점수 조정 기능
+           */
+          //mmr , resPointStr 변수에 결과 값 초기화 처리 해주셔야 합니다.
+        }
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+      },
+    );
 
     /*****
      * 4. Return
