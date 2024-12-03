@@ -15,15 +15,23 @@ dotenv.config();
 
 /** 풋살온라인 - 뽑기 API → (JWT 인증 필요)  **/
 router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
-  const { userId, cash, stack } = req.user; // 유저 정보 가져오세요~
+  const { userId } = req.user; // 유저 정보 가져오세요~
   const { count } = req.body; // 바디에서 정보 가져오세요~
 
   const gachaCash = 1000; // 캐시 재화
   const gachaCeiling = 10; // 뽑기 천장.
 
+  // 연결.
+  const user = await prisma.users.findFirst({
+    where: {
+      userId : userId,
+    }
+  })
+
+
   //// 한꺼번에 적용하기 위한 변수.
-  let gachaCount = stack; // 뽑기 카운터.
-  let userCash = cash; // 현재 캐시.
+  let gachaCount = user.stack; // 뽑기 카운터.
+  let userCash = user.cash; // 현재 캐시.
   let cardList = [];   // 내보낼 카드 목록.
 
   try {
@@ -53,7 +61,7 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
         let grade = ""; // 등급
 
         // 1-1. 천장인지 아닌지 확인.
-        if (stack < gachaCeiling) {
+        if (user.stack < gachaCeiling) {
           // 1-2. 천장이 아니라면 등급 설정.
           if (randomValue <= 0.1) {
             grade = "Gold"; // 10프로 확률
