@@ -9,12 +9,12 @@
     "dev": "nodemon src/app.js"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.6",
     "nodemon": "^3.1.7",
     "prettier": "^3.4.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.0.1",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.1",
@@ -22,7 +22,9 @@
     "express-session": "^1.18.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.22.0",
+    "prisma": "^6.0.1",
     "winston": "^3.17.0"
-  }
+  },
+  "repository": "https://github.com/Hwang20241024/FutsalOnlineProject.git",
+  "author": "Youmin Lee <youmin0107@naver.com>"
 }
