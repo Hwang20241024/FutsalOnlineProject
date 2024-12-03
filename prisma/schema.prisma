@@ -17,12 +17,12 @@ model Users {
   userId   Int    @id @default(autoincrement()) @map("userId")
   id       String @unique @map("id")
   password String @map("password")
-  cash     Int    @map("cash")
-  mmr      Int    @map("mmr")
-  stack    Int    @map("stack")
+  cash     Int    @default(100000) @map("cash")
+  mmr      Int    @default(1000) @map("mmr")
+  stack    Int    @default(0) @map("stack")
 
   inventory Inventory[]
-  Team Team?
+  Team      Team?
 
   matchResults1 MatchResult[] @relation("User1")
   matchResults2 MatchResult[] @relation("User2")
@@ -34,7 +34,7 @@ model Inventory {
   inventoryId Int @id @default(autoincrement()) @map("inventoryId")
   userId      Int @map("userId")
   cardId      Int @map("cardId")
-  upgrade     Int @map("upgrade")
+  upgrade     Int @default(0) @map("upgrade")
 
   users Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
   cards Cards @relation(fields: [cardId], references: [cardId], onDelete: Cascade)
@@ -49,13 +49,13 @@ model Inventory {
 model Cards {
   cardId  Int    @id @default(autoincrement()) @map("cardId")
   name    String @map("name")
-  grade   String @map("grade")
   speed   Int    @map("speed")
   shoot   Int    @map("shoot")
   pass    Int    @map("pass")
   sight   Int    @map("sight")
   tackle  Int    @map("tackle")
   defence Int    @map("defence")
+  grade   String @map("grade")
 
   inventory Inventory[]
 
@@ -65,15 +65,14 @@ model Cards {
 model Team {
   teamId       Int @id @default(autoincrement()) @map("teamId")
   userId       Int @unique @map("userId")
-  inventoryId1 Int @unique @map("inventoryId1")
-  inventoryId2 Int @unique @map("inventoryId2")
-  inventoryId3 Int @unique @map("inventoryId3")
+  inventoryId1 Int? @unique @map("inventoryId1")
+  inventoryId2 Int? @unique @map("inventoryId2")
+  inventoryId3 Int? @unique @map("inventoryId3")
 
-  inventory1 Inventory @relation("Inventory1", fields: [inventoryId1], references: [inventoryId], onDelete: Cascade)
-  inventory2 Inventory @relation("Inventory2", fields: [inventoryId2], references: [inventoryId], onDelete: Cascade)
-  inventory3 Inventory @relation("Inventory3", fields: [inventoryId3], references: [inventoryId], onDelete: Cascade)
-  users Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
+  inventory1 Inventory? @relation("Inventory1", fields: [inventoryId1], references: [inventoryId], onDelete: Cascade)
+  inventory2 Inventory? @relation("Inventory2", fields: [inventoryId2], references: [inventoryId], onDelete: Cascade)
+  inventory3 Inventory? @relation("Inventory3", fields: [inventoryId3], references: [inventoryId], onDelete: Cascade)
+  users      Users     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("Team")
 }
