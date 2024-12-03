@@ -13,143 +13,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//==정규화==//
-// 제 1 정규화(1NF) : 테이블에 중복된 컬럼 없음.              (완료)
-// 제 2 정규화(2NF) : 복합기본키를 사용해야함                 (완료)
-// 제 3 정규화(3NF) : 기본키 외의 의존하는 속성 없음          (완료)
-// 제 4 정규화(4NF) : 복합 기본키 세분화 (복합 기본키 세분화) (    )             
-// 제 5 정규화(5NF) : 중복 조인 없애기 (조인 종속성 해결)     (    )
+model Users {
+  userId   Int    @id @default(autoincrement()) @map("userId")
+  id       String @unique @map("id")
+  password String @map("password")
+  cash     Int    @default(100000) @map("cash")
+  mmr      Int    @default(1000) @map("mmr")
+  stack    Int    @default(0) @map("stack")
 
-//==설계 흐름==//
-// 1.   유저      →  캐시        [1:1] 
-// 2.   유저      →  승패_기록   [1:1]
-// 3_1. 유저      →  랭킹        [1:1]
-// 3_2. 승패_기록 →              [1:1]
-// 4_1. 케릭터    →  케릭터 목록 [1:n]
-// 4_2. 유저      →              [1:n]
+  inventory Inventory[]
+  Team      Team?
 
-//==설계 설명==//
-//// 유저 → 캐시 [1:1] 
-// 1. 캐시는 유저가 소유하며, 게임 플레이에서 자주 변동.
-// 2. 데이터를 자주 업데이트하는 작업의 효율성을 높이고, 
-//    유저 테이블을 정리하기 위해 별도로 분리      
+  matchResults1 MatchResult[] @relation("User1")
+  matchResults2 MatchResult[] @relation("User2")
 
-//// 유저 → 승패_기록     [1:1]    
-// 1. 유저별 게임의 승리, 무승부, 패배, 점수 데이터를 관리.
-// 2. 승패 기록은 순위 계산에 자주 사용되며, 데이터가 자주 변동
-// 3. 유저 테이블과 독립적으로 관리하여 업데이트 효율성을 높힘.
-
-//// 유저/승패_기록 → 랭킹 [1:1]  
-// 1. 유저의 승률과 점수를 기반으로 랭킹을 계산하고 관리.
-// 2. 랭킹은 유저의 승패 기록과 연계되어 자주 업데이트
-// 3. 랭킹은 독립적으로 유지하며 동적으로 관리
-
-//// 케릭터/유저 →  케릭터 목록  [1:n]
-// 1. 유저가 소유한 개별 캐릭터와 강화 정보를 관리.
-// 2. 한 명의 유저는 여러 캐릭터를 가질 수 있다.
-// 3. 캐릭터는 강화 수치와 변경된 능력치를 갖는다. 
-//    강화로 인해 캐릭터의 가중치가 변동되므로, 별도로 관리.
-
-//==사용법==//
-//// 1. 유저ID 가져오기 (예시)
-// const user = await prisma.users.findUnique({
-//   where: {
-//     NAME: "토큰에서 가져온 이름", // 유저 이름을 기준으로 찾기
-//   },
-//   select: {
-//     USERS_ID: true, // 유저 ID만 가져옴
-//   },
-// });
-
-//// 2. 업데이트 (예시)
-// await prisma.테이블이름.update({
-//   where: { USERS_NAME: 유저ID },
-//   data: { 업데이트할 데이터 }, // 업데이트할 데이터.
-// });
-
-//// 3. 유저와 함께 특정 테이블 데이터 가져오기 (예시)
-// const user = await prisma.users.findUnique({ 
-//    where: {
-//      USERS_ID: "토큰에서 가져온 이름",
-//    },
-//    include: {
-//      CASH: true, // 필드 전체 포함.
-//      USER_SCORES: {
-//        select: {  // USER_SCORES 테이블에서 필요한 데이터만 선택
-//          WINS: true,
-//          DRAWS: true,
-//          LOSSES: true,
-//        },
-//      },
-//      RANKINGS: true,
-//      USER_CHARACTERS: true,
-//    },
-// }),
-
-//// 4. 왠만해선 post나 update를 할때는 transaction 사용을 권장합니다.
-
-// 유저 테이블
-model users {
-  USERID   Int    @id @default(autoincrement()) @map("userId")
-  ID       String @unique @map("id")
-  PASSWORD String @map("password")
-  CASH     String @map("cash")
-  MMR      Int    @map("mmr")
-
-  MATCHRESULTS matchresults[]
-  TEAM         team[]
-  INVENTORY    inventory[]
-
-  @@map("USERS")
+  @@map("Users")
 }
 
-// 매칭 테이블 
-model matchresults {
-  MATCHID Int    @id @default(autoincrement()) @map("MATCHID")
-  USERID  Int    @map("userId")
-  RESULT  String @map("result") @db.Text
-  ENEMY   Json   @map("enemy")
+model Inventory {
+  inventoryId Int @id @default(autoincrement()) @map("inventoryId")
+  userId      Int @map("userId")
+  cardId      Int @map("cardId")
+  upgrade     Int @default(0) @map("upgrade")
 
-  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  users Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  cards Cards @relation(fields: [cardId], references: [cardId], onDelete: Cascade)
 
-  @@map("MATCHRESULTS")
+  team1 Team? @relation("Inventory1")
+  team2 Team? @relation("Inventory2")
+  team3 Team? @relation("Inventory3")
+
+  @@map("Invertory")
 }
 
-// 카드 테이블 
-model team {
-  TEAMID     Int    @id @default(autoincrement()) @map("teamId")
-  USERID     Int    @map("userId")
-  FORWARD    String @map("forward")
-  MIDFIELDER String @map("midfielder")
-  DEFENDER   String @map("defender")
+model Cards {
+  cardId  Int    @id @default(autoincrement()) @map("cardId")
+  name    String @map("name")
+  speed   Int    @map("speed")
+  shoot   Int    @map("shoot")
+  pass    Int    @map("pass")
+  sight   Int    @map("sight")
+  tackle  Int    @map("tackle")
+  defence Int    @map("defence")
+  grade   String @map("grade")
 
-  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  inventory Inventory[]
 
-  @@map("TEAM")
+  @@map("Cards")
 }
 
-// 인벤토리 테이블 
-model inventory {
-  INVENTORYID Int @id @default(autoincrement()) @map("inventoryId")
-  USERID      Int @map("userId")
-  CARDID      Int @map("cardId")
-  UPGRADE     Int @map("upgrade")
-  PLAYING     Int @map("playing")
+model Team {
+  teamId       Int @id @default(autoincrement()) @map("teamId")
+  userId       Int @unique @map("userId")
+  inventoryId1 Int? @unique @map("inventoryId1")
+  inventoryId2 Int? @unique @map("inventoryId2")
+  inventoryId3 Int? @unique @map("inventoryId3")
 
-  CARDS cards @relation(fields: [CARDID], references: [CARDID], onDelete: Cascade)
-  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  inventory1 Inventory? @relation("Inventory1", fields: [inventoryId1], references: [inventoryId], onDelete: Cascade)
+  inventory2 Inventory? @relation("Inventory2", fields: [inventoryId2], references: [inventoryId], onDelete: Cascade)
+  inventory3 Inventory? @relation("Inventory3", fields: [inventoryId3], references: [inventoryId], onDelete: Cascade)
+  users      Users     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@map("INVENTORY")
+  @@map("Team")
 }
 
-// 카드들 테이블.
-model cards {
-  CARDID Int    @id @default(autoincrement()) @map("cardId")
-  NAME   String @map("name")
-  STAT   Json   @map("stat")
-  GRADE  String @map("grade")
+model MatchResult {
+  matchId Int @id @default(autoincrement()) @map("matchId")
+  userId1 Int @map("userId1")
+  userId2 Int @map("userid2")
+  score1  Int @map("score1")
+  score2  Int @map("score2")
 
-  INVENTORY inventory[]
+  user1 Users @relation("User1", fields: [userId1], references: [userId], onDelete: Cascade)
+  user2 Users @relation("User2", fields: [userId2], references: [userId], onDelete: Cascade)
 
-  @@map("CARDS")
+  @@map("MatchResult")
 }

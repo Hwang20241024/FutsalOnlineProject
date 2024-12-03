@@ -1,6 +1,7 @@
 // 라이브러리 import
 import express from "express";
 import cookieParser from "cookie-parser";
+import UsersRouter from "./routes/users.router.js";
 
 // 모듈 import
 import ErrorHandlingMiddleware from "./middlewares/errorHandler.js";
@@ -13,7 +14,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* 라우터 추가 */
-//app.use('/futsalOnline',[...]);
+app.use('/api',[UsersRouter]);
 
 /* 에러 처리 미들 웨어 */
 app.use(ErrorHandlingMiddleware);
