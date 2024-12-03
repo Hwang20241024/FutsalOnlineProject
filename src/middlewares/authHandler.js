@@ -16,8 +16,8 @@ export default async function (req, res, next) {
     const userId = decodedToken.userId;
 
     // 현재 USERS 테이블 조회. 토큰 네임이랑 
-    const user = await prisma.USERS.findFirst({
-      where: { ID: +userId },
+    const user = await prisma.users.findFirst({
+      where: { id: +userId },
     });
     if (!user) {
       res.clearCookie("authorization");

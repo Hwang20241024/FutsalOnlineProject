@@ -89,67 +89,67 @@ datasource db {
 //// 4. 왠만해선 post나 update를 할때는 transaction 사용을 권장합니다.
 
 // 유저 테이블
-model USERS {
+model users {
   USERID   Int    @id @default(autoincrement()) @map("userId")
   ID       String @unique @map("id")
   PASSWORD String @map("password")
   CASH     String @map("cash")
   MMR      Int    @map("mmr")
 
-  MATCHRESULTS MATCHRESULTS[]
-  TEAM         TEAM[]
-  INVENTORY    INVENTORY[]
+  MATCHRESULTS matchresults[]
+  TEAM         team[]
+  INVENTORY    inventory[]
 
   @@map("USERS")
 }
 
 // 매칭 테이블 
-model MATCHRESULTS {
+model matchresults {
   MATCHID Int    @id @default(autoincrement()) @map("MATCHID")
   USERID  Int    @map("userId")
   RESULT  String @map("result") @db.Text
   ENEMY   Json   @map("enemy")
 
-  USERS USERS @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
   @@map("MATCHRESULTS")
 }
 
 // 카드 테이블 
-model TEAM {
+model team {
   TEAMID     Int    @id @default(autoincrement()) @map("teamId")
   USERID     Int    @map("userId")
   FORWARD    String @map("forward")
   MIDFIELDER String @map("midfielder")
   DEFENDER   String @map("defender")
 
-  USERS USERS @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
   @@map("TEAM")
 }
 
 // 인벤토리 테이블 
-model INVENTORY {
+model inventory {
   INVENTORYID Int @id @default(autoincrement()) @map("inventoryId")
   USERID      Int @map("userId")
   CARDID      Int @map("cardId")
   UPGRADE     Int @map("upgrade")
   PLAYING     Int @map("playing")
 
-  CARDS CARDS @relation(fields: [CARDID], references: [CARDID], onDelete: Cascade)
-  USERS USERS @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
+  CARDS cards @relation(fields: [CARDID], references: [CARDID], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
   @@map("INVENTORY")
 }
 
 // 카드들 테이블.
-model CARDS {
+model cards {
   CARDID Int    @id @default(autoincrement()) @map("cardId")
   NAME   String @map("name")
   STAT   Json   @map("stat")
   GRADE  String @map("grade")
 
-  INVENTORY INVENTORY[]
+  INVENTORY inventory[]
 
   @@map("CARDS")
 }
