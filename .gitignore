@@ -1,6 +1,6 @@
 # 필요없는파일
 .prettierrc
-# prisma/
+prisma/
 
 # Logs
 logs
