@@ -89,82 +89,67 @@ datasource db {
 //// 4. 왠만해선 post나 update를 할때는 transaction 사용을 권장합니다.
 
 // 유저 테이블
-model USERS {
-  USERS_ID      String @id @default(uuid()) @map("USERS_ID")
-  NAME          String @unique @map("NAME")
-  PASSWORD      String @map("PASSWORD")
-  REFRESH_TOKEN String @map("REFRESH_TOKEN") @db.Text
+model users {
+  USERID   Int    @id @default(autoincrement()) @map("userId")
+  ID       String @unique @map("id")
+  PASSWORD String @map("password")
+  CASH     String @map("cash")
+  MMR      Int    @map("mmr")
 
-  CASH        CASH?
-  USER_SCORES USER_SCORES?
-  RANKINGS    RANKINGS?
-  USER_CHARACTERS USER_CHARACTERS[]
+  MATCHRESULTS matchresults[]
+  TEAM         team[]
+  INVENTORY    inventory[]
 
   @@map("USERS")
 }
 
-// 캐시 테이블
-model CASH {
-  CASH_ID    Int    @id @default(autoincrement()) @map("CASH_ID")
-  USERS_NAME String @unique @map("USERS_NAME")
-  CASH       Int?   @map("CASH")
+// 매칭 테이블 
+model matchresults {
+  MATCHID Int    @id @default(autoincrement()) @map("MATCHID")
+  USERID  Int    @map("userId")
+  RESULT  String @map("result") @db.Text
+  ENEMY   Json   @map("enemy")
 
-  USERS USERS @relation(fields: [USERS_NAME], references: [NAME], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
-  @@map("CASH")
+  @@map("MATCHRESULTS")
 }
 
-// 승패 기록 테이블 
-model USER_SCORES {
-  SCORE_ID   Int    @id @default(autoincrement()) @map("SCORE_ID")
-  USERS_NAME String @unique @map("USERS_NAME")
-  WINS       Int?   @map("WINS")
-  DRAWS      Int?   @map("DRAWS")
-  LOSSES     Int?   @map("LOSSES")
-  WINRATE    Int?   @map("WINRATE")
-  SCORE      Int?   @map("SCORE")
+// 카드 테이블 
+model team {
+  TEAMID     Int    @id @default(autoincrement()) @map("teamId")
+  USERID     Int    @map("userId")
+  FORWARD    String @map("forward")
+  MIDFIELDER String @map("midfielder")
+  DEFENDER   String @map("defender")
 
-  RANKINGS RANKINGS?
-  USERS    USERS     @relation(fields: [USERS_NAME], references: [NAME], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
-  @@map("USER_SCORES")
+  @@map("TEAM")
 }
 
-// 순위 테이블 
-model RANKINGS {
-  RANKING_ID Int    @id @default(autoincrement()) @map("RANKING_ID")
-  USERS_NAME String @unique @map("USERS_NAME")
-  SCORE_ID   Int    @unique @map("SCORE_ID")
-  RANK       Int    @map("RANK")
+// 인벤토리 테이블 
+model inventory {
+  INVENTORYID Int @id @default(autoincrement()) @map("inventoryId")
+  USERID      Int @map("userId")
+  CARDID      Int @map("cardId")
+  UPGRADE     Int @map("upgrade")
+  PLAYING     Int @map("playing")
 
-  USERS       USERS       @relation(fields: [USERS_NAME], references: [NAME], onDelete: Cascade)
-  USER_SCORES USER_SCORES @relation(fields: [SCORE_ID], references: [SCORE_ID], onDelete: Cascade)
+  CARDS cards @relation(fields: [CARDID], references: [CARDID], onDelete: Cascade)
+  USERS users @relation(fields: [USERID], references: [USERID], onDelete: Cascade)
 
-  @@map("RANKINGS")
+  @@map("INVENTORY")
 }
 
-// 케릭터 테이블 
-model CHARACTERS {
-  CHARACTER_ID Int    @id @default(autoincrement()) @map("CHARACTER_ID")
-  NAME         String @unique @map("NAME")
-  ABILITIES    Json   @map("ABILITIES")
-  WEIGHT       Int    @map("DEFAULT_WEIGHT")
+// 카드들 테이블.
+model cards {
+  CARDID Int    @id @default(autoincrement()) @map("cardId")
+  NAME   String @map("name")
+  STAT   Json   @map("stat")
+  GRADE  String @map("grade")
 
-  USER_CHARACTERS USER_CHARACTERS[]
+  INVENTORY inventory[]
 
-  @@map("CHARACTERS")
-}
-
-// 케릭터 목록 테이블 
-model USER_CHARACTERS {
-  CHARACTERS_ID Int    @id @default(autoincrement()) @map("USER_CHARACTERS_ID")
-  USERS_NAME    String @map("USERS_NAME")
-  CHARACTER_ID  Int    @map("CHARACTER_ID")
-  ABILITIES     Json   @map("ABILITIES")
-  ENHANCED      Int    @map("ENHANCED")
-
-  CHARACTERS CHARACTERS @relation(fields: [CHARACTER_ID],references: [CHARACTER_ID], onDelete: Cascade)
-  USERS      USERS      @relation(fields: [USERS_NAME],references: [NAME], onDelete: Cascade)
-
-  @@map("USER_CHARACTERS")
+  @@map("CARDS")
 }
