@@ -3,6 +3,12 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import UsersRouter from "./routes/users.router.js";
 import GamesRouter from "./routes/games.router.js";
+import CardsUpgrade from "./routes/upgrade.router.js";
+import OrganizeRouter from "./routes/organize.router.js";
+import GachaRouter from "./routes/gacha.router.js";
+import RankRouter from "./routes/ranks.router.js";
+import InventoryRouter from "./routes/inventory.router.js";
+
 
 // 모듈 import
 import ErrorHandlingMiddleware from "./middlewares/errorHandler.js";
@@ -15,7 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* 라우터 추가 */
-app.use("/api", [UsersRouter, GamesRouter]);
+app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter, CardsUpgrade, RankRouter,InventoryRouter]);
 
 /* 에러 처리 미들 웨어 */
 app.use(ErrorHandlingMiddleware);
