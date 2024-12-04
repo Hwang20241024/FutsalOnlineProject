@@ -1,5 +1,5 @@
 import express from "express";
-import { prisma } from "../src/utils/prisma";
+import { prisma } from "../utils/prisma/index.js";
 
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
 
@@ -93,3 +93,6 @@ router.post("/api/teams/cards", async (req, res, next) => {
     .status(200)
     .json({ message: `${slotId}번 슬릇에 ${chosenMember.name} 투입` });
 });
+
+
+export default router;
