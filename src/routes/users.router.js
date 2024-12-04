@@ -3,7 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma/index.js";
-import authMiddleware from "../middlewares/authHandeler.js";
+import authMiddleware from "../middlewares/authHandler.js";
 
 const router = express.Router();
 
