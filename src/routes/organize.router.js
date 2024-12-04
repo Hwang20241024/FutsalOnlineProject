@@ -1,10 +1,11 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
+import authMiddleware from "../middlewares/authHandler.js";
 
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
 
 //팀 편성 API
-router.post("/api/teams/cards", async (req, res, next) => {
+router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
   //유저 정보
   const { userId } = req.user;
   //슬릇 선택, 보유 중인 선수 카드 중 선택
@@ -92,7 +93,7 @@ router.post("/api/teams/cards", async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: `${slotId}번 슬릇에 ${chosenMember.name} 투입` });
+    .json({ message: `${slotId}번 슬릇에 ${chosenMember.name} 선수가 합류하였습니다.` });
 });
 
 export default router;
