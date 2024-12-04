@@ -6,19 +6,28 @@ const router = express.Router(); // express.Router()를 이용해 라우터를 �
 //팀 편성 API
 router.post("/api/teams/cards", async (req, res, next) => {
   //유저 정보
-  const { userId } = req.user;
+  const { userId } = req.user.userId;
   //슬릇 선택, 보유 중인 선수 카드 중 선택
   const { slotId, inventoryId } = req.body;
 
+  //사용자의 팀
+  const chosenSlot = await prisma.team.findFirst({
+    where: { userId },
+  });
   //선택된 선수
-  const chosenMember = await prisma.inventory.findById(inventoryId).exec();
+  const chosenMember = await prisma.inventory.findFirst({
+    where: { inventoryId },
+  });
+
+  //선택된 선수
+  //const chosenMember = await prisma.inventory.findById(inventoryId).exec();
   //선택된 슬릇
-  const chosenSlot = await prisma.team.findOne(slotId).exec();
+  // const chosenSlot = await prisma.team.findOne(slotId).exec();
 
   // 연결
   const user = await prisma.users.findFirst({
     where: {
-      userId: +userId,
+      userId,
     },
   });
 
@@ -92,6 +101,5 @@ router.post("/api/teams/cards", async (req, res, next) => {
     .status(200)
     .json({ message: `${slotId}번 슬릇에 ${chosenMember.name} 투입` });
 });
-
 
 export default router;
