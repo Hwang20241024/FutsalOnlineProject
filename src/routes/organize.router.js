@@ -27,17 +27,14 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
 
   await prisma.$transaction(async (prisma) => {
     //중복 편성 방지
-    for (let i = 1; i < 4; i++) {
-      //조건 맞는지 확인해야함
-      if (
-        chosenSlot.inventoryId1 === chosenMember.inventoryId ||
-        chosenSlot.inventoryId2 === chosenMember.inventoryId ||
-        chosenSlot.inventoryId3 === chosenMember.inventoryId
-      ) {
-        return res
-          .status(405)
-          .json({ message: `이미 투입되어있는 선수입니다.` });
-      }
+
+    //조건 맞는지 확인해야함
+    if (
+      chosenSlot.inventoryId1 === chosenMember.inventoryId ||
+      chosenSlot.inventoryId2 === chosenMember.inventoryId ||
+      chosenSlot.inventoryId3 === chosenMember.inventoryId
+    ) {
+      return res.status(405).json({ message: `이미 투입되어있는 선수입니다.` });
     }
 
     //선택한 선수 포지션 결정
@@ -93,7 +90,9 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: `${slotId}번 슬릇에 ${chosenMember.name} 선수가 합류하였습니다.` });
+    .json({
+      message: `${slotId}번 슬릇에 ${chosenMember.name} 선수가 합류하였습니다.`,
+    });
 });
 
 export default router;
