@@ -174,6 +174,28 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       resPointStr = "0 점";
     }
 
+    let highMmrChange = 10 + Math.floor(Math.abs(myUser.mmr - enemyUser.mmr)/100); //mmr이 높은사람이 졌을때
+    let lowMmrChange = 10 - Math.floor(Math.abs(myUser.mmr - enemyUser.mmr)/100); //mmr이 높은사람이 이겼을때
+    let mmrChange = 0; //mmr변동 숫자변수
+
+    if(lowMmrChange < 0) {lowMmrChange = 0;} //변동 mmr이 음수일때, 0으로 변경
+
+    if (myUser.mmr > enemyUser.mmr) { //내가 mmr이 높을 때
+      if (myScore > enemyScore) { //이겼을때
+        mmrChange = lowMmrChange; // 승리 시 MMR 증가치
+      } else if (myScore < enemyScore) { //졌을때
+        mmrChange = -highMmrChange; // 패배 시 MMR 감소치
+      }
+    }
+    
+    else if (myUser.mmr < enemyUser.mmr) { //내가 mmr이 낮을 때
+      if (myScore > enemyScore) { //이겼을때
+        mmrChange = highMmrChange; // 승리 시 MMR 증가치
+      } else if (myScore < enemyScore) { //졌을때
+        mmrChange = -lowMmrChange; // 패배 시 MMR 감소치
+      }
+    }
+
     // 경기 결과 등록
     prisma.$transaction(
       async (tx) => {
@@ -191,6 +213,16 @@ router.post("/games", authMiddleware, async (req, res, next) => {
            * 3. 승리/패배 시 게임 점수 조정 기능
            */
           //mmr , resPointStr 변수에 결과 값 초기화 처리 해주셔야 합니다.
+
+          await prisma.users.update({ //내 mmr 변동
+            where: { userId: myUser.userId },
+            data: { mmr: mmr + mmrChange }, 
+          });
+
+          await prisma.users.update({ //상대방 mmr 변동
+            where: { userId: enemyUser.userId },
+            data: { mmr: enemyUser.mmr - mmrChange },
+          });
         }
       },
       {
@@ -204,7 +236,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     return res.status(201).json({
       message: messageStr,
       mmr: mmr,
-      resPoint: resPointStr,
+      resPoint: `${mmrChange} 점`,
     });
   } catch (error) {
     next(error);
