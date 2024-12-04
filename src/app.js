@@ -5,7 +5,7 @@ import UsersRouter from "./routes/users.router.js";
 import GamesRouter from "./routes/games.router.js";
 import CardsUpgrade from "./routes/cards.upgrade.js";
 import OrganizeRouter from "./routes/organize.router.js";
-import GachaRouter from "./routes/gacha.js";
+import GachaRouter from "./routes/gacha.router.js";
 
 
 // 모듈 import
