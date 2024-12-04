@@ -7,7 +7,7 @@ const router = express.Router(); // express.Router()를 이용해 라우터를 �
 /** 대전 기록 조회 API **/
 router.get("/records", authMiddleware, async (req, res, next) => {
   //유저 정보
-  const { userId } = req.user;
+  const userId = req.user;
 
   //사용자의 대전 기록
   const records1 = await prisma.matchresult.findMany({
