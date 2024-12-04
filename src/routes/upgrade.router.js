@@ -1,23 +1,23 @@
-import bcrypt from "bcrypt";
 import express from "express";
-import jwt from "jsonwebtoken";
-import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma/index.js";
 import authHandeler from "../middlewares/authHandler.js";
 
 const router = express.Router();
-//카드 강화 API
+
+// 카드 강화 API
 router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
   const { inventoryId1, inventoryId2 } = req.body;
-  const  userId  = req.user;
+  const userId = req.user;
 
   try {
-    //인증미들웨어 userId로  각각inventoryId1,inventoryId2가 본인 카드인지 검증 아니라면 오류출력
+    // inventoryId1, inventoryId2가 본인 카드인지 검증
     const inventory1 = await prisma.inventory.findUnique({
       where: { inventoryId: inventoryId1 },
+      include: { cards: true }, // 카드 정보를 포함
     });
     const inventory2 = await prisma.inventory.findUnique({
       where: { inventoryId: inventoryId2 },
+      include: { cards: true },
     });
 
     if (!inventory1 || !inventory2) {
@@ -28,43 +28,68 @@ router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
       return res.status(403).json({ message: "본인의 카드가 아닙니다." });
     }
 
-    //각각inventoryId1,inventoryId2에 해당하는 cardId가 같은 카드인지 확인 아니라면 오류 출력
+    // 같은 카드인지 확인
     if (inventory1.cardId !== inventory2.cardId) {
       return res
         .status(400)
         .json({ message: "같은 종류의 카드만 강화할 수 있습니다." });
     }
 
-    //본인 카드면서 같은 카드면 강화 진행 트랜잭션으로 진행
-    await prisma.$transaction(async (prisma) => {
-      //두 카드의 upgrade수치 합치기 강화 최대 10
-      let totalUpgrade = Math.min(inventory1.upgrade + inventory2.upgrade, 10);
-      //강화돼서 스탯이 추가된 새 카드 유저 인벤토리에 생성
-      if(totalUpgrade === 0) totalUpgrade = 1;
+    // 강화 진행
+    const upgradedCard = await prisma.$transaction(async (prisma) => {
+      // 두 카드의 upgrade 합산 (최대 10)
+      let totalUpgrade = Math.min(
+        inventory1.upgrade + inventory2.upgrade,
+        10
+      );
 
-      const upgradedCard = await prisma.inventory.create({
+      if (totalUpgrade === 0) totalUpgrade = 1;
+      else if (inventory1.upgrade === 0 || inventory2.upgrade === 0) {
+        totalUpgrade += 1;
+      }
+
+      // 강화된 새 카드 생성
+      const newCard = await prisma.inventory.create({
         data: {
           userId,
           cardId: inventory1.cardId,
           upgrade: totalUpgrade,
         },
+        include: { cards: true },
       });
-      //재료인 2개카드 삭제
+
+      // 재료 카드 삭제
       await prisma.inventory.delete({
-        where: {
-          inventoryId: inventoryId1,
-        },
+        where: { inventoryId: inventoryId1 },
       });
 
       await prisma.inventory.delete({
-        where: {
-          inventoryId: inventoryId2,
-        },
+        where: { inventoryId: inventoryId2 },
       });
+
+      return newCard;
     });
 
-    return res.status(200).json({ message: "카드 강화가 완료되었습니다." });
+    // 결과 반환
+    return res.status(200).json({
+      message: "카드 강화가 완료되었습니다.",
+      cardInfo: {
+        cardId: upgradedCard.cards.cardId,
+        name: upgradedCard.cards.name,
+        speed: upgradedCard.cards.speed,
+        shoot: upgradedCard.cards.shoot,
+        pass: upgradedCard.cards.pass,
+        sight: upgradedCard.cards.sight,
+        tackle: upgradedCard.cards.tackle,
+        defence: upgradedCard.cards.defence,
+        grade: upgradedCard.cards.grade,
+      },
+      upgradedCard: {
+        upgrade: upgradedCard.upgrade,
+      },
+    });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
