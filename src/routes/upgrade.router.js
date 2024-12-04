@@ -9,8 +9,8 @@ const router = express.Router();
 //카드 강화 API
 router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
   const { inventoryId1, inventoryId2 } = req.body;
-  const { userId } = req.user;
-  
+  const  userId  = req.user;
+
   try {
     //인증미들웨어 userId로  각각inventoryId1,inventoryId2가 본인 카드인지 검증 아니라면 오류출력
     const inventory1 = await prisma.inventory.findUnique({
@@ -38,8 +38,10 @@ router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
     //본인 카드면서 같은 카드면 강화 진행 트랜잭션으로 진행
     await prisma.$transaction(async (prisma) => {
       //두 카드의 upgrade수치 합치기 강화 최대 10
-      const totalUpgrade = Math.min(inventory1.upgrade + inventory2.upgrade, 10);
+      let totalUpgrade = Math.min(inventory1.upgrade + inventory2.upgrade, 10);
       //강화돼서 스탯이 추가된 새 카드 유저 인벤토리에 생성
+      if(totalUpgrade === 0) totalUpgrade = 1;
+
       const upgradedCard = await prisma.inventory.create({
         data: {
           userId,
@@ -50,13 +52,13 @@ router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
       //재료인 2개카드 삭제
       await prisma.inventory.delete({
         where: {
-          inventoryId: inventoryId1.inventoryId,
+          inventoryId: inventoryId1,
         },
       });
 
       await prisma.inventory.delete({
         where: {
-          inventoryId: inventoryId2.inventoryId,
+          inventoryId: inventoryId2,
         },
       });
     });
