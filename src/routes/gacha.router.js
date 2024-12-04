@@ -60,7 +60,7 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
         let grade = ""; // 등급
 
         // 1-1. 천장인지 아닌지 확인.
-        if (user.stack < gachaCeiling) {
+        if (gachaCount < gachaCeiling) {
           // 1-2. 천장이 아니라면 등급 설정.
           if (randomValue <= 0.1) {
             grade = "GOLD"; // 10프로 확률
