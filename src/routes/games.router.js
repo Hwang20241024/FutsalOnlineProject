@@ -253,6 +253,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     let resPointStr = ""; //resPoint의 Sring 값
     let mmr = myUser.mmr;
     let isDraw = false; //무승부 여부
+    const enemyUser = enemyInfo.users;
 
     if (myScore > enemyScore) {
       messageStr = `'${myScore} - ${enemyScore}'로 승리하셨습니다.`;
@@ -264,24 +265,32 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       resPointStr = "0 점";
     }
 
-    let highMmrChange = 10 + Math.floor(Math.abs(myUser.mmr - enemyUser.mmr)/100); //mmr이 높은사람이 졌을때
-    let lowMmrChange = 10 - Math.floor(Math.abs(myUser.mmr - enemyUser.mmr)/100); //mmr이 높은사람이 이겼을때
+    let highMmrChange =
+      10 + Math.floor(Math.abs(myUser.mmr - enemyUser.mmr) / 100); //mmr이 높은사람이 졌을때
+    let lowMmrChange =
+      10 - Math.floor(Math.abs(myUser.mmr - enemyUser.mmr) / 100); //mmr이 높은사람이 이겼을때
     let mmrChange = 0; //mmr변동 숫자변수
 
-    if(lowMmrChange < 0) {lowMmrChange = 0;} //변동 mmr이 음수일때, 0으로 변경
+    if (lowMmrChange < 0) {
+      lowMmrChange = 0;
+    } //변동 mmr이 음수일때, 0으로 변경
 
-    if (myUser.mmr > enemyUser.mmr) { //내가 mmr이 높을 때
-      if (myScore > enemyScore) { //이겼을때
+    if (myUser.mmr > enemyUser.mmr) {
+      //내가 mmr이 높을 때
+      if (myScore > enemyScore) {
+        //이겼을때
         mmrChange = lowMmrChange; // 승리 시 MMR 증가치
-      } else if (myScore < enemyScore) { //졌을때
+      } else if (myScore < enemyScore) {
+        //졌을때
         mmrChange = -highMmrChange; // 패배 시 MMR 감소치
       }
-    }
-    
-    else if (myUser.mmr < enemyUser.mmr) { //내가 mmr이 낮을 때
-      if (myScore > enemyScore) { //이겼을때
+    } else if (myUser.mmr < enemyUser.mmr) {
+      //내가 mmr이 낮을 때
+      if (myScore > enemyScore) {
+        //이겼을때
         mmrChange = highMmrChange; // 승리 시 MMR 증가치
-      } else if (myScore < enemyScore) { //졌을때
+      } else if (myScore < enemyScore) {
+        //졌을때
         mmrChange = -lowMmrChange; // 패배 시 MMR 감소치
       }
     }
@@ -304,12 +313,14 @@ router.post("/games", authMiddleware, async (req, res, next) => {
            */
           //mmr , resPointStr 변수에 결과 값 초기화 처리 해주셔야 합니다.
 
-          await prisma.users.update({ //내 mmr 변동
+          await tx.users.update({
+            //내 mmr 변동
             where: { userId: myUser.userId },
-            data: { mmr: mmr + mmrChange }, 
+            data: { mmr: mmr + mmrChange },
           });
 
-          await prisma.users.update({ //상대방 mmr 변동
+          await tx.users.update({
+            //상대방 mmr 변동
             where: { userId: enemyUser.userId },
             data: { mmr: enemyUser.mmr - mmrChange },
           });
