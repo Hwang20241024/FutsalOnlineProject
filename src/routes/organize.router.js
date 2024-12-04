@@ -25,7 +25,6 @@ router.post("/api/teams/cards", async (req, res, next) => {
   await prisma.$transaction(async (prisma) => {
     //중복 편성 방지
     for (let i = 1; i < 4; i++) {
-      let check = "inventoryId" + i;
       //조건 맞는지 확인해야함
       if (
         chosenSlot.inventoryId1 == chosenMember.inventoryId ||
