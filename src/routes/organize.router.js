@@ -50,7 +50,7 @@ router.post("/api/teams/cards", async (req, res, next) => {
 
     //만약 slotId로 못 받는 경우 위에 거 말고 스위치 문으로 시도
     // switch (slotId) {
-    //   case inventoryId1:
+    //   case "inventoryId1":
     //     await prisma.team.update({
     //       where: {
     //         userId: +user.userId,
@@ -59,7 +59,7 @@ router.post("/api/teams/cards", async (req, res, next) => {
     //         inventoryId1: +inventoryId,
     //       },
     //     });
-    //   case inventoryId2:
+    //   case "inventoryId2":
     //     await prisma.team.update({
     //       where: {
     //         userId: +user.userId,
@@ -68,7 +68,7 @@ router.post("/api/teams/cards", async (req, res, next) => {
     //         inventoryId2: +inventoryId,
     //       },
     //     });
-    //   case inventoryId3:
+    //   case "inventoryId3":
     //     await prisma.team.update({
     //       where: {
     //         userId: +user.userId,
