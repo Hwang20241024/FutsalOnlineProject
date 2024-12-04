@@ -8,7 +8,7 @@ const router = express.Router();
 /*** 축구 게임 API */
 router.post("/games", authMiddleware, async (req, res, next) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user;
 
     /*****
      *  데이터 검사
@@ -63,20 +63,110 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     /*****
      * 1. 매치 메이킹
      */
-    // const enemyUser = {};
-    // const enemyPlayers = {};
 
-    //테스트용 조회 입니다.
-    const enemyUser = await prisma.users.findFirst({ where: { userId: 2 } });
-    const enemyTeam = await prisma.team.findFirst({ where: { userId: 2 } });
+    let enemyInfo = {}; //매치 상대의 정보를 담을 변수
+
+    // 1. 나와 같은 점수의 대상자 조회
+    let searchEnemyUser = await prisma.team.findMany({
+      select: {
+        userId: true,
+        inventoryId1: true,
+        inventoryId2: true,
+        inventoryId3: true,
+        users: {
+          select: {
+            userId: true,
+            id: true,
+            mmr: true,
+          },
+        },
+      },
+      where: {
+        userId: { not: userId },
+        AND: [
+          { inventoryId1: { not: null } },
+          { inventoryId2: { not: null } },
+          { inventoryId3: { not: null } },
+          { users: { mmr: myUser.mmr } },
+        ],
+      },
+    });
+
+    // 없으면 범위 조회
+    if (!searchEnemyUser || searchEnemyUser.length === 0) {
+      let range = 50;
+      let searchRange = range;
+
+      while (true) {
+        searchEnemyUser = await prisma.team.findMany({
+          select: {
+            userId: true,
+            inventoryId1: true,
+            inventoryId2: true,
+            inventoryId3: true,
+            users: {
+              select: {
+                userId: true,
+                id: true,
+                mmr: true,
+              },
+            },
+          },
+          where: {
+            userId: { not: userId },
+            AND: [
+              { inventoryId1: { not: null } },
+              { inventoryId2: { not: null } },
+              { inventoryId3: { not: null } },
+              { users: { mmr: { gte: myUser.mmr - searchRange / 2 } } },
+              { users: { mmr: { lte: myUser.mmr + searchRange } } },
+            ],
+          },
+          orderBy: { users: { mmr: "desc" } },
+        });
+
+        //조회 범위 내에 없으면 범위 값 늘려서 재조회
+        if (!searchEnemyUser || searchEnemyUser.length === 0) {
+          searchRange += range;
+          continue;
+        }
+
+        break;
+      }
+
+      /*****
+       * 나의 점수랑 가까운 대상을 선별
+       */
+      let diffMmr = 0;
+      for (let i = 0; i < searchEnemyUser.length; i++) {
+        if (diffMmr === 0) {
+          diffMmr = Math.abs(myUser.mmr - searchEnemyUser[i].users.mmr);
+          enemyInfo = searchEnemyUser[i];
+        } else {
+          let value = Math.abs(myUser.mmr - searchEnemyUser[i].users.mmr);
+          if (diffMmr > value) {
+            diffMmr = value;
+            enemyInfo = searchEnemyUser[i];
+          }
+        }
+      }
+    } else {
+      // 같은 점수대의 상대가 있으면 랜덤 뽑기
+      enemyInfo =
+        searchEnemyUser.length > 1
+          ? searchEnemyUser[Math.floor(Math.random() * searchEnemyUser.length)]
+          : searchEnemyUser[0];
+    }
+
+    //상대의 팀 카드 정보 조회
     const enemyPlayers = await prisma.inventory.findMany({
       where: {
-        userId: 2,
+        userId: enemyInfo.userId,
         inventoryId: {
           in: [
-            enemyTeam.inventoryId1,
-            enemyTeam.inventoryId2,
-            enemyTeam.inventoryId3,
+            enemyInfo.inventoryId1,
+            enemyInfo.inventoryId2,
+            enemyInfo.inventoryId3,
           ],
         },
       },
@@ -197,12 +287,12 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     }
 
     // 경기 결과 등록
-    prisma.$transaction(
+    await prisma.$transaction(
       async (tx) => {
-        const matchresult = await prisma.matchResult.create({
+        const matchresult = await tx.matchResult.create({
           data: {
             userId1: myUser.userId,
-            userId2: enemyUser.userId,
+            userId2: enemyInfo.userId,
             score1: myScore,
             score2: enemyScore,
           },
@@ -243,7 +333,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
   }
 });
 
-//공격 기회 처리
+//공격 성공 여부
 const isSuccess = (status1, status2, type) => {
   let res = false;
   const randomValue = Math.random() * 100;
