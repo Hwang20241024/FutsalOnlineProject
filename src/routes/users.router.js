@@ -74,7 +74,7 @@ router.post("/sign-in", async (req, res, next) => {
     {
       userId: user.userId,
     },
-    secretKey
+    secretKey,
   );
 
   // authotization 쿠키에 Berer 토큰 형식으로 JWT를 저장합니다.
@@ -109,23 +109,81 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
     return next(new CustomError("유저가 없습니다.", 404)); // 상태 코드 404: Not Found
   }
 
-  // 3. 순위를 매긴다. 
+  // 3. 팀정보를 가져온다.
+  const team = await prisma.team.findFirst({
+    where: {
+      userId: userId,
+    },
+    select: {
+      inventoryId1: true,
+      inventoryId2: true,
+      inventoryId3: true,
+    },
+  });
+
+  // 4. 팀정보를 가없다면
+  if (!team) {
+    // 상태 코드 500: Internal Server Error
+    return next(
+      new CustomError(
+        "중대한 오류: 팀 정보가 누락되었습니다. 데이터베이스를 확인해주세요.",
+        500,
+      ),
+    );
+  }
+
+  // 5. 순위를 매긴다.
   const rankedUsers = users.map((user, index) => ({
     ranking: index + 1, // 인덱스가 0부터 시작, + 1을 해야한다.
     ...user,
   }));
 
-  // 순위를 정하고 내정보를 가져오자.
-  const myUser = rankedUsers.find(user => user.userId === userId);
+  // 6. 순위를 정하고 내정보를 가져오자.
+  const myUser = rankedUsers.find((user) => user.userId === userId);
 
-  // 출력
+  
+  // 7. 팀으로 설정된 선수를 대리고 오자.
+  const player_id = [team.inventoryId1, team.inventoryId2, team.inventoryId3];
+  let player_name = [];
+
+  for (let value of player_id) {
+    let cardName = null;
+
+    if (value !== null) {
+      cardName = await prisma.inventory.findFirst({
+        where: {
+          userId: userId,
+          inventoryId: value,
+        },
+        select: {
+          cards: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+    }
+
+    if(value !== null && cardName) {
+      player_name.push(cardName.cards.name);
+    } else {
+      player_name.push("팀원이 없습니다.");
+    }
+  }
+
+  // 7. 출력
   return res.status(201).json({
     ranking: myUser.ranking,
     id: myUser.id,
     mmr: myUser.mmr,
     cash: myUser.cash,
+    team: {
+      player_01: player_name[0],
+      player_02: player_name[1],
+      player_03: player_name[2],
+    },
   });
-
-})
+});
 
 export default router;
