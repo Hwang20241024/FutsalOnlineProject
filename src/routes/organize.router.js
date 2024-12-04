@@ -5,11 +5,17 @@ const router = express.Router(); // express.Router()를 이용해 라우터를 �
 
 //팀 편성 API
 router.post("/api/teams/cards", async (req, res, next) => {
+  //유저 정보
+  const {userId}=req.user;
   //슬릇 선택, 보유 중인 선수 카드 중 선택
   const { slotId, inventoryId } = req.body;
 
-  ///*인증 어케하는지 공부한 뒤에 수정*/
-  //const myteam= await prisma.team.findById(userId).exec();
+  // 연결.
+  const user = await prisma.users.findFirst({
+    where: {
+      userId : userId,
+    }
+  })
 
   //선택된 선수
   const chosenMember = await prisma.inventory.findById(inventoryId).exec();
@@ -37,6 +43,14 @@ router.post("/api/teams/cards", async (req, res, next) => {
     default:
   }
 
+  //중복 편성 방지
+  for (let i = 1; i < 4; i++) {
+    let check = "inventoryId" + i;
+    if (chosenSlot.check == chosenMember.inventoryId) {
+      //warning("이미 편성되어있습니다.")
+    }
+  }
+
   //근데 이대로면 그냥
   // if (chosenMember) {
   //   chosenSlot.slotId = chosenMember.inventoryId;
@@ -44,5 +58,12 @@ router.post("/api/teams/cards", async (req, res, next) => {
   // await chosenSlot.save();
   //굳이 스위치문 안 쓰고 이렇게 해도 되겠는데?
 
-  return res.status(200).json({});
+  //
+  // await prisma.team.update({
+  //   where: {
+  //     userId: userId
+  //   }
+  // })
+
+  return res.status(200).json({message: `${slotId}번 슬릇에 ${chosenMember.name} 투입`});
 });
