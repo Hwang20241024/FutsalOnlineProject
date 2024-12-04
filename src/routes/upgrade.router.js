@@ -3,7 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma/index.js";
-import authHandeler from "../middlewares/authHandeler.js";
+import authHandeler from "../middlewares/authHandler.js";
 
 const router = express.Router();
 //카드 강화 API

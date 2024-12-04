@@ -15,7 +15,7 @@ dotenv.config();
 
 /** 풋살온라인 - 뽑기 API → (JWT 인증 필요)  **/
 router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
-  const { userId } = req.user; // 유저 정보 가져오세요~
+  const {userId} = req.user; // 유저 정보 가져오세요~
   const { count } = req.body; // 바디에서 정보 가져오세요~
 
   const gachaCash = 1000; // 캐시 재화
@@ -24,19 +24,18 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
   // 연결.
   const user = await prisma.users.findFirst({
     where: {
-      userId : userId,
-    }
-  })
-
+      userId: +userId,
+    },
+  });
 
   //// 한꺼번에 적용하기 위한 변수.
   let gachaCount = user.stack; // 뽑기 카운터.
   let userCash = user.cash; // 현재 캐시.
-  let cardList = [];   // 내보낼 카드 목록.
+  let cardList = []; // 내보낼 카드 목록.
 
   try {
     // 예외 조건 : 카운터가 무조건 정수이거나 0 이상이여야함.
-    if (!Number.isInteger(count) || count === 0) {
+    if (!Number.isInteger(count) || count === 0 || count > 10) {
       throw new CustomError(
         "뽑기를 진행하기위한 횟수를 제대로 입력하세요.",
         400,
@@ -64,15 +63,15 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
         if (user.stack < gachaCeiling) {
           // 1-2. 천장이 아니라면 등급 설정.
           if (randomValue <= 0.1) {
-            grade = "Gold"; // 10프로 확률
+            grade = "GOLD"; // 10프로 확률
           } else if (randomValue <= 0.3) {
-            grade = "Silver"; // 30프로 확률
+            grade = "SILVER"; // 30프로 확률
           } else {
-            grade = "bronze"; // 60프로 확률
+            grade = "BRONZE"; // 60프로 확률
           }
         } else {
           // 1-4. 천장이라면 최고등급으로..
-          grade = "Gold";
+          grade = "GOLD";
 
           // 1-5. 스택 초기화.
           gachaCount = 0;
@@ -141,13 +140,12 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
       }
     });
 
+    console.log(cardList);
     // 출력
-    return res
-      .status(200)
-      .json(
-        { message: `[${count}]번 뽑으셨습니다. [남은 캐시 : ${userCash}]` },
-        {cardList: cardList},
-      );
+    return res.status(200).json({
+      message: `[${count}]번 뽑으셨습니다. [남은 캐시 : ${userCash}]`,
+      cards: cardList,
+    });
   } catch (error) {
     return next(error);
   }
