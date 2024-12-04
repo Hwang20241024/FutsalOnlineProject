@@ -6,6 +6,7 @@ import GamesRouter from "./routes/games.router.js";
 import CardsUpgrade from "./routes/cards.upgrade.js";
 import OrganizeRouter from "./routes/organize.router.js";
 import GachaRouter from "./routes/gacha.router.js";
+import RankRouter from "./routes/ranks.router.js";
 
 
 // 모듈 import
@@ -19,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* 라우터 추가 */
-app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter]);
+app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter,RankRouter]);
 
 /* 에러 처리 미들 웨어 */
 app.use(ErrorHandlingMiddleware);
