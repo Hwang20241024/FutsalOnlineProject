@@ -29,7 +29,7 @@ export default async function mmrToTier(userId) {
 
     console.log(userRank);
     // 3. 티어 결정.
-    if (userMmr.mmr > 2000 && userRank < 10) {
+    if (userMmr.mmr > 2000 && userRank <= 10) {
       tier = "챌린저";
     } else if (userMmr.mmr > 2000) {
       tier = "다이아";
