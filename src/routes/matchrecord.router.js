@@ -13,16 +13,12 @@ router.get("/records", authMiddleware, async (req, res, next) => {
   const records1 = await prisma.matchResult.findMany({
     where: { OR: [{ userId1: userId }, { userId2: userId }] },
   });
-  //   //or 같은 연산자로 동시에 묶는 방법은?
-  //   const records2 = await prisma.matchresult.findMany({
-  //     where: {
-  //       userId2: userId,
-  //     },
-  //   });
 
-  return res.status(200).json(
-    records1
-  );
+  try {
+    return res.status(200).json(records1);
+  } catch (error) {
+    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
 });
 
 export default router;
