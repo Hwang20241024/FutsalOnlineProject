@@ -29,7 +29,7 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
       //미소지 카드 편성 방지
       if (chosenMember.userId == userId) {
         return res
-          .status(405)
+          .status(403)
           .json({ message: `보유하신 선수 카드가 아닙니다.` });
       }
 
@@ -40,7 +40,7 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
         chosenSlot.inventoryId3 === chosenMember.inventoryId
       ) {
         return res
-          .status(405)
+          .status(400)
           .json({ message: `이미 투입되어있는 선수입니다.` });
       }
 
