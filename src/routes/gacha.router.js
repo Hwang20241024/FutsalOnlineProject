@@ -64,6 +64,7 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
           // 1-2. 천장이 아니라면 등급 설정.
           if (randomValue <= 0.1) {
             grade = "GOLD"; // 10프로 확률
+            gachaCount = 0; // 천장이 아니어도 골드 뽑으면 스택 초기화.
           } else if (randomValue <= 0.3) {
             grade = "SILVER"; // 30프로 확률
           } else {

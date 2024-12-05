@@ -26,6 +26,7 @@ router.get("/cards/inventory", authMiddleware, async (req, res, next) => {
         select: {
           name: true,
           speed: true,
+          shoot: true,
           pass: true,
           sight: true,
           tackle: true,
@@ -49,6 +50,7 @@ router.get("/cards/inventory", authMiddleware, async (req, res, next) => {
     const upgradedCards = {
       ...cards,
       speed: upgrade ? `${cards.speed} (+${upgrade})` : cards.speed,
+      shoot: upgrade ? `${cards.shoot} (+${upgrade})` : cards.shoot,
       pass: upgrade ? `${cards.pass} (+${upgrade})` : cards.pass,
       sight: upgrade ? `${cards.sight} (+${upgrade})` : cards.sight,
       tackle: upgrade ? `${cards.tackle} (+${upgrade})` : cards.tackle,
@@ -88,6 +90,7 @@ router.get("/cards", authMiddleware, async (req, res, next) => {
         select: {
           name: true,
           speed: true,
+          shoot: true,
           pass: true,
           sight: true,
           tackle: true,
@@ -110,6 +113,7 @@ router.get("/cards", authMiddleware, async (req, res, next) => {
     const upgradedCards = {
       ...cards,
       speed: upgrade ? `${cards.speed} (+${upgrade})` : cards.speed,
+      shoot: upgrade ? `${cards.shoot} (+${upgrade})` : cards.shoot,
       pass: upgrade ? `${cards.pass} (+${upgrade})` : cards.pass,
       sight: upgrade ? `${cards.sight} (+${upgrade})` : cards.sight,
       tackle: upgrade ? `${cards.tackle} (+${upgrade})` : cards.tackle,

@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma/index.js";
 import authMiddleware from "../middlewares/authHandler.js";
+import mmrToTier from "../utils/helpers/mmrToTier.js";
+import CustomError from "../utils/errors/customError.js";
 
 const router = express.Router();
 
@@ -172,6 +174,7 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
       player_name.push("팀원이 없습니다.");
     }
   }
+  console.log(mmrToTier(userId));
 
   // 7. 출력
   return res.status(201).json({
@@ -179,6 +182,7 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
     id: myUser.id,
     mmr: myUser.mmr,
     cash: myUser.cash,
+    Tier: await mmrToTier(userId),
     team: {
       striker: player_name[0],
       defender: player_name[1],

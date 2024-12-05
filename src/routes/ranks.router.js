@@ -3,6 +3,7 @@ import express from "express";
 
 // 모듈 import
 import { prisma } from "../utils/prisma/index.js";
+import mmrToTier from "../utils/helpers/mmrToTier.js";
 import CustomError from "../utils/errors/customError.js";
 
 // 라우터 생성.
@@ -16,6 +17,7 @@ router.get("/ranks",  async (req, res, next) => {
   // 1. 유저 정보를 가져온다.
   const users = await prisma.users.findMany({
     select: {
+      userId: true,
       id: true, // id 컬럼만 선택
       mmr: true, // mmr 컬럼만 선택
     },
@@ -31,10 +33,16 @@ router.get("/ranks",  async (req, res, next) => {
   });
 
   // 2. 순위를 추가한다. 
-  const rankedUsers = users.map((user, index) => ({
-    ranking: index + 1, // 인덱스가 0부터 시작, + 1을 해야한다.
-    ...user,
-  }));
+  const rankedUsers = await Promise.all(
+    users.map(async (user, index) => {
+      return {
+        ranking: index + 1,
+        Tier: await mmrToTier(user.userId),
+        ...user,
+      };
+    })
+  );
+  
 
   // 3. 출력.
   return res.status(200).json({
