@@ -7,7 +7,10 @@ import CardsUpgrade from "./routes/upgrade.router.js";
 import OrganizeRouter from "./routes/organize.router.js";
 import GachaRouter from "./routes/gacha.router.js";
 import RankRouter from "./routes/ranks.router.js";
+import InventoryRouter from "./routes/inventory.router.js";
+import MatchrecordRouter from "./routes/matchrecord.router.js";
 import CardFusion from "./routes/fusion.router.js";
+
 
 
 // 모듈 import
@@ -21,7 +24,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* 라우터 추가 */
-app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter, CardsUpgrade, RankRouter,CardFusion]);
+
+app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter, CardsUpgrade, RankRouter, InventoryRouter, MatchrecordRouter]);
+
 
 /* 에러 처리 미들 웨어 */
 app.use(ErrorHandlingMiddleware);

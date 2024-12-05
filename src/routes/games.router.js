@@ -8,7 +8,7 @@ const router = express.Router();
 /*** 축구 게임 API */
 router.post("/games", authMiddleware, async (req, res, next) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user;
 
     /*****
      *  데이터 검사
@@ -63,20 +63,110 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     /*****
      * 1. 매치 메이킹
      */
-    // const enemyUser = {};
-    // const enemyPlayers = {};
 
-    //테스트용 조회 입니다.
-    const enemyUser = await prisma.users.findFirst({ where: { userId: 2 } });
-    const enemyTeam = await prisma.team.findFirst({ where: { userId: 2 } });
+    let enemyInfo = {}; //매치 상대의 정보를 담을 변수
+
+    // 1. 나와 같은 점수의 대상자 조회
+    let searchEnemyUser = await prisma.team.findMany({
+      select: {
+        userId: true,
+        inventoryId1: true,
+        inventoryId2: true,
+        inventoryId3: true,
+        users: {
+          select: {
+            userId: true,
+            id: true,
+            mmr: true,
+          },
+        },
+      },
+      where: {
+        userId: { not: userId },
+        AND: [
+          { inventoryId1: { not: null } },
+          { inventoryId2: { not: null } },
+          { inventoryId3: { not: null } },
+          { users: { mmr: myUser.mmr } },
+        ],
+      },
+    });
+
+    // 없으면 범위 조회
+    if (!searchEnemyUser || searchEnemyUser.length === 0) {
+      let range = 50;
+      let searchRange = range;
+
+      while (true) {
+        searchEnemyUser = await prisma.team.findMany({
+          select: {
+            userId: true,
+            inventoryId1: true,
+            inventoryId2: true,
+            inventoryId3: true,
+            users: {
+              select: {
+                userId: true,
+                id: true,
+                mmr: true,
+              },
+            },
+          },
+          where: {
+            userId: { not: userId },
+            AND: [
+              { inventoryId1: { not: null } },
+              { inventoryId2: { not: null } },
+              { inventoryId3: { not: null } },
+              { users: { mmr: { gte: myUser.mmr - searchRange / 2 } } },
+              { users: { mmr: { lte: myUser.mmr + searchRange } } },
+            ],
+          },
+          orderBy: { users: { mmr: "desc" } },
+        });
+
+        //조회 범위 내에 없으면 범위 값 늘려서 재조회
+        if (!searchEnemyUser || searchEnemyUser.length === 0) {
+          searchRange += range;
+          continue;
+        }
+
+        break;
+      }
+
+      /*****
+       * 나의 점수랑 가까운 대상을 선별
+       */
+      let diffMmr = 0;
+      for (let i = 0; i < searchEnemyUser.length; i++) {
+        if (diffMmr === 0) {
+          diffMmr = Math.abs(myUser.mmr - searchEnemyUser[i].users.mmr);
+          enemyInfo = searchEnemyUser[i];
+        } else {
+          let value = Math.abs(myUser.mmr - searchEnemyUser[i].users.mmr);
+          if (diffMmr > value) {
+            diffMmr = value;
+            enemyInfo = searchEnemyUser[i];
+          }
+        }
+      }
+    } else {
+      // 같은 점수대의 상대가 있으면 랜덤 뽑기
+      enemyInfo =
+        searchEnemyUser.length > 1
+          ? searchEnemyUser[Math.floor(Math.random() * searchEnemyUser.length)]
+          : searchEnemyUser[0];
+    }
+
+    //상대의 팀 카드 정보 조회
     const enemyPlayers = await prisma.inventory.findMany({
       where: {
-        userId: 2,
+        userId: enemyInfo.userId,
         inventoryId: {
           in: [
-            enemyTeam.inventoryId1,
-            enemyTeam.inventoryId2,
-            enemyTeam.inventoryId3,
+            enemyInfo.inventoryId1,
+            enemyInfo.inventoryId2,
+            enemyInfo.inventoryId3,
           ],
         },
       },
@@ -160,9 +250,9 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     }
 
     let messageStr = ""; //message의 String 값
-    let resPointStr = ""; //resPoint의 Sring 값
     let mmr = myUser.mmr;
     let isDraw = false; //무승부 여부
+    const enemyUser = enemyInfo.users;
 
     if (myScore > enemyScore) {
       messageStr = `'${myScore} - ${enemyScore}'로 승리하셨습니다.`;
@@ -171,16 +261,43 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     } else {
       messageStr = `'${myScore} - ${enemyScore}'로 무승부 입니다.`;
       isDraw = true;
-      resPointStr = "0 점";
+    }
+
+    let highMmrChange =
+      10 + Math.floor(Math.abs(myUser.mmr - enemyUser.mmr) / 100); //mmr이 높은사람이 졌을때
+    let lowMmrChange =
+      10 - Math.floor(Math.abs(myUser.mmr - enemyUser.mmr) / 100); //mmr이 높은사람이 이겼을때
+    let mmrChange = 0; //mmr변동 숫자변수
+
+    if (lowMmrChange < 0) {
+      lowMmrChange = 0;
+    } //변동 mmr이 음수일때, 0으로 변경
+
+    if (myUser.mmr >= enemyUser.mmr) { //내가 mmr이 높을 때
+      if (myScore > enemyScore) { //이겼을때
+        mmrChange = lowMmrChange; // 승리 시 MMR 증가치
+      } else if (myScore < enemyScore) {
+        //졌을때
+        mmrChange = -highMmrChange; // 패배 시 MMR 감소치
+      }
+    } else if (myUser.mmr < enemyUser.mmr) {
+      //내가 mmr이 낮을 때
+      if (myScore > enemyScore) {
+        //이겼을때
+        mmrChange = highMmrChange; // 승리 시 MMR 증가치
+      } else if (myScore < enemyScore) {
+        //졌을때
+        mmrChange = -lowMmrChange; // 패배 시 MMR 감소치
+      }
     }
 
     // 경기 결과 등록
-    prisma.$transaction(
+    await prisma.$transaction(
       async (tx) => {
-        const matchresult = await prisma.matchResult.create({
+        const matchresult = await tx.matchResult.create({
           data: {
             userId1: myUser.userId,
-            userId2: enemyUser.userId,
+            userId2: enemyInfo.userId,
             score1: myScore,
             score2: enemyScore,
           },
@@ -191,6 +308,20 @@ router.post("/games", authMiddleware, async (req, res, next) => {
            * 3. 승리/패배 시 게임 점수 조정 기능
            */
           //mmr , resPointStr 변수에 결과 값 초기화 처리 해주셔야 합니다.
+
+          await tx.users.update({
+            //내 mmr 변동
+            where: { userId: myUser.userId },
+            data: { mmr: mmr + mmrChange },
+          });
+
+          await tx.users.update({
+            //상대방 mmr 변동
+            where: { userId: enemyUser.userId },
+            data: { mmr: enemyUser.mmr - mmrChange },
+          });
+
+          mmr += mmrChange;
         }
       },
       {
@@ -204,14 +335,14 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     return res.status(201).json({
       message: messageStr,
       mmr: mmr,
-      resPoint: resPointStr,
+      resPoint: `${mmrChange} 점`,
     });
   } catch (error) {
     next(error);
   }
 });
 
-//공격 기회 처리
+//공격 성공 여부
 const isSuccess = (status1, status2, type) => {
   let res = false;
   const randomValue = Math.random() * 100;
