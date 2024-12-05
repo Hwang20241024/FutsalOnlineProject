@@ -76,12 +76,12 @@ router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
       cardInfo: {
         cardId: upgradedCard.cards.cardId,
         name: upgradedCard.cards.name,
-        speed: upgradedCard.cards.speed,
-        shoot: upgradedCard.cards.shoot,
-        pass: upgradedCard.cards.pass,
-        sight: upgradedCard.cards.sight,
-        tackle: upgradedCard.cards.tackle,
-        defence: upgradedCard.cards.defence,
+        speed: `${upgradedCard.cards.speed} (+${upgradedCard.upgrade})`,
+        shoot: `${upgradedCard.cards.shoot} (+${upgradedCard.upgrade})`,
+        pass: `${upgradedCard.cards.pass} (+${upgradedCard.upgrade})`,
+        sight: `${upgradedCard.cards.sight} (+${upgradedCard.upgrade})`,
+        tackle: `${upgradedCard.cards.tackle} (+${upgradedCard.upgrade})`,
+        defence: `${upgradedCard.cards.defence} (+${upgradedCard.upgrade})`,
         grade: upgradedCard.cards.grade,
       },
       upgradedCard: {
