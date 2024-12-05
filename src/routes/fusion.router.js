@@ -12,31 +12,55 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
 
   try {
     // 한개의 카드를 중복사용했는지 검증
-    if (inventoryId1 === inventoryId2 || inventoryId2 === inventoryId3 || inventoryId3 === inventoryId1) {
-      return res.status(400).json({ message: "하나의 카드를 중복해서 사용할 수 없습니다." });
+    if (
+      inventoryId1 === inventoryId2 ||
+      inventoryId2 === inventoryId3 ||
+      inventoryId3 === inventoryId1
+    ) {
+      return res
+        .status(400)
+        .json({ message: "하나의 카드를 중복해서 사용할 수 없습니다." });
+    }
+
+    //장착중인지 검증
+    const userTeam = await prisma.team.findUnique({
+      where: { userId: userId },
+    });
+
+    const equippedCards = [
+      userTeam.inventoryId1,
+      userTeam.inventoryId2,
+      userTeam.inventoryId3,
+    ];
+    const inputCards = [inventoryId1, inventoryId2, inventoryId3];
+
+    if (inputCards.some((card) => equippedCards.includes(card))) {
+      return res
+        .status(400)
+        .json({ message: "장착된 카드를 조합할 수 없습니다." });
     }
 
     // 인벤토리 검증
-    const inventory1 = await prisma.inventory.findUnique({
-      where: { inventoryId: inventoryId1 },
-      include: { cards: true },
-    });
-    const inventory2 = await prisma.inventory.findUnique({
-      where: { inventoryId: inventoryId2 },
-      include: { cards: true },
-    });
-    const inventory3 = await prisma.inventory.findUnique({
-      where: { inventoryId: inventoryId3 },
-      include: { cards: true },
-    });
+    const inventories = await Promise.all(
+      inputCards.map(inventoryId =>
+        prisma.inventory.findUnique({
+          where: { inventoryId },
+          include: { cards: true },
+        })
+      )
+    );
 
     // 카드 존재 여부 확인
-    if (!inventory1 || !inventory2 || !inventory3) {
+    if (!inventories[0] || !inventories[1] || !inventories[2]) {
       return res.status(404).json({ message: "카드를 찾을 수 없습니다." });
     }
 
     // 카드 소유권 확인
-    if (inventory1.userId !== userId || inventory2.userId !== userId || inventory3.userId !== userId) {
+    if (
+      inventories[0].userId !== userId ||
+      inventories[1].userId !== userId ||
+      inventories[2].userId !== userId
+    ) {
       return res.status(403).json({ message: "본인의 카드가 아닙니다." });
     }
 
@@ -46,7 +70,7 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
       let grade = "";
       let bounsrate = 0;
 
-      const materials = [inventory1, inventory2, inventory3];
+      const materials = [inventories[0], inventories[1], inventories[2]];
 
       // 재료별 확률 추가
       materials.forEach((element) => {
@@ -55,13 +79,18 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
         else bounsrate += 1;
       });
 
+      console.log(bounsrate);
+
       if (randomValue <= 5 + bounsrate) grade = "GOLD";
       else if (randomValue <= 30 + bounsrate) grade = "SILVER";
       else grade = "BRONZE";
 
       const cardCount = await prisma.cards.count({ where: { grade } });
       if (cardCount === 0) {
-        throw new CustomError("서버 문제로 인해 뽑기를 진행할 수 없습니다.", 500);
+        throw new CustomError(
+          "서버 문제로 인해 뽑기를 진행할 수 없습니다.",
+          500,
+        );
       }
 
       // 카드 랜덤 선택
@@ -73,7 +102,10 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
       });
 
       if (!randomCard) {
-        throw new CustomError("서버 문제로 인해 조합을 진행할 수 없습니다.", 500);
+        throw new CustomError(
+          "서버 문제로 인해 조합을 진행할 수 없습니다.",
+          500,
+        );
       }
 
       // 새 카드 추가
@@ -87,8 +119,10 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
       // 기존 카드 삭제
       await Promise.all(
         materials.map((inventory) =>
-          prisma.inventory.delete({ where: { inventoryId: inventory.inventoryId } })
-        )
+          prisma.inventory.delete({
+            where: { inventoryId: inventory.inventoryId },
+          }),
+        ),
       );
     });
 

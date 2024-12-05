@@ -25,7 +25,9 @@ app.use(cookieParser());
 
 /* 라우터 추가 */
 
+
 app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter, CardsUpgrade, RankRouter, InventoryRouter, MatchrecordRouter, CardFusionRouter]);
+
 
 
 /* 에러 처리 미들 웨어 */

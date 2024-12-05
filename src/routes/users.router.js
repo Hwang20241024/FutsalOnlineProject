@@ -187,4 +187,39 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
   });
 });
 
+//돈벌기 API
+router.patch("/cash", authMiddleware, async (req, res, next) => {
+  const  userId  = req.user;
+
+  try {
+    await prisma.$transaction(async (prisma) => {
+      // 유저 찾기
+      const user = await prisma.users.findFirst({
+        where: {
+          userId: +userId,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: "계정 정보를 찾을 수 없습니다.",
+        });
+      }
+
+      // 캐릭터 잔액 증가
+      const newMoney = user.cash +10000;
+      await prisma.users.update({
+        where: { userId: +userId },
+        data: {
+          cash: newMoney,
+        },
+      });
+
+      res.status(200).json({ message: "10000캐시 충전 완료",data:{ cash: newMoney } });
+    });
+  } catch (error) {
+    console.error(error);
+    next(error); // 오류 미들웨어로 전달
+  }
+});
 export default router;
