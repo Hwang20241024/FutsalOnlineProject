@@ -2,6 +2,7 @@ import express from "express";
 import { prisma } from "../utils/prisma/index.js";
 import { Prisma } from "@prisma/client";
 import authMiddleware from "../middlewares/authHandler.js";
+import mmrToTier from "../utils/helpers/mmrToTier.js";
 
 const router = express.Router();
 
@@ -60,6 +61,8 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       include: { cards: true },
     });
 
+    // 나의 티어 조회
+    const beforeMytier = await mmrToTier(userId);
     /*****
      * 1. 매치 메이킹
      */
@@ -331,12 +334,14 @@ router.post("/games", authMiddleware, async (req, res, next) => {
       },
     );
 
+    const tier = await mmrToTier(userId);
     /*****
      * 4. Return
      */
     return res.status(201).json({
       message: messageStr,
       mmr: `${mmr} (${mmrChange} 점)`,
+      tier: `${tier}${beforeMytier !== tier ? " (티어가 변경되었습니다)" : ""}`,
     });
   } catch (error) {
     next(error);
