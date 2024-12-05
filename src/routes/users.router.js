@@ -185,8 +185,8 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
     Tier: await mmrToTier(userId),
     team: {
       striker: player_name[0],
-      defender: player_name[1],
-      midfielder: player_name[2],
+      midfielder: player_name[1],
+      defender: player_name[2],
     },
   });
 });

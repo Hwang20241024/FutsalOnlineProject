@@ -144,7 +144,8 @@ router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
     console.log(cardList);
     // 출력
     return res.status(200).json({
-      message: `[${count}]번 뽑으셨습니다. [남은 캐시 : ${userCash}]`,
+      message1: `[${count}]번 뽑으셨습니다. [남은 캐시 : ${userCash}]`,
+      message2: `앞으로 ${10 - gachaCount}회 이후 뽑기 GOLD 확정!!` ,
       cards: cardList,
     });
   } catch (error) {

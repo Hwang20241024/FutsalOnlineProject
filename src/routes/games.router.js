@@ -199,15 +199,15 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     for (let i = 0; i < attackCount; i++) {
       if (
         isSuccess(
-          myPlayers[0].cards.pass + myPlayers[0].upgrade,
-          myPlayers[0].cards.sight + myPlayers[0].upgrade,
+          myPlayers[1].cards.pass + myPlayers[1].upgrade,
+          myPlayers[1].cards.sight + myPlayers[1].upgrade,
           "A",
         )
       ) {
         if (
           isSuccess(
-            myPlayers[1].cards.speed + myPlayers[1].upgrade,
-            myPlayers[1].cards.shoot + myPlayers[1].upgrade,
+            myPlayers[0].cards.speed + myPlayers[0].upgrade,
+            myPlayers0[0].cards.shoot + myPlayers[0].upgrade,
             "A",
           )
         ) {
@@ -227,15 +227,15 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     for (let i = 0; i < attackCount; i++) {
       if (
         isSuccess(
-          enemyPlayers[0].cards.pass + enemyPlayers[0].upgrade,
-          enemyPlayers[0].cards.sight + enemyPlayers[0].upgrade,
+          enemyPlayers[1].cards.pass + enemyPlayers[1].upgrade,
+          enemyPlayers[1].cards.sight + enemyPlayers[1].upgrade,
           "A",
         )
       ) {
         if (
           isSuccess(
-            enemyPlayers[1].cards.speed + enemyPlayers[1].upgrade,
-            enemyPlayers[1].cards.shoot + enemyPlayers[1].upgrade,
+            enemyPlayers[0].cards.speed + enemyPlayers[0].upgrade,
+            enemyPlayers[0].cards.shoot + enemyPlayers[0].upgrade,
             "A",
           )
         ) {
