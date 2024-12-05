@@ -24,26 +24,22 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
     where: { cardId: chosenMember.cardId },
   });
 
+  //미소지 카드 편성 방지
+  if (chosenMember.userId !== userId) {
+    return res.status(403).json({ message: `보유하신 선수 카드가 아닙니다.` });
+  }
+
+  //중복 편성 방지
+  if (
+    chosenSlot.inventoryId1 === chosenMember.inventoryId ||
+    chosenSlot.inventoryId2 === chosenMember.inventoryId ||
+    chosenSlot.inventoryId3 === chosenMember.inventoryId
+  ) {
+    return res.status(400).json({ message: `이미 투입되어있는 선수입니다.` });
+  }
+
   try {
     await prisma.$transaction(async (prisma) => {
-      //미소지 카드 편성 방지
-      if (chosenMember.userId == userId) {
-        return res
-          .status(403)
-          .json({ message: `보유하신 선수 카드가 아닙니다.` });
-      }
-
-      //중복 편성 방지
-      if (
-        chosenSlot.inventoryId1 === chosenMember.inventoryId ||
-        chosenSlot.inventoryId2 === chosenMember.inventoryId ||
-        chosenSlot.inventoryId3 === chosenMember.inventoryId
-      ) {
-        return res
-          .status(400)
-          .json({ message: `이미 투입되어있는 선수입니다.` });
-      }
-
       //선택한 선수 포지션 결정
       switch (slotId) {
         case "inventoryId1":
@@ -90,7 +86,69 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
     });
 
     return res.status(200).json({
-      message: `${slotId}번 슬릇에 ${chosenMemberName.name} 선수가 합류하였습니다.`,
+      message: `${slotId.charAt(11)}번 포지션에 ${chosenMemberName.name} 선수가 합류하였습니다.`,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+/**팀 해체 API **/
+router.post("/teams/release", authMiddleware, async (req, res, next) => {
+  //유저 정보
+  const userId = req.user;
+  //슬릇 선택, 보유 중인 선수 카드 중 선택
+  const { slotId } = req.body;
+
+  try {
+    await prisma.$transaction(async (prisma) => {
+      //선택한 선수 포지션 결정
+      switch (slotId) {
+        case "inventoryId1":
+          await prisma.team.update({
+            where: {
+              userId,
+            },
+            data: {
+              inventoryId1: null,
+            },
+          });
+          break;
+        case "inventoryId2":
+          await prisma.team.update({
+            where: {
+              userId,
+            },
+            data: {
+              inventoryId2: null,
+            },
+          });
+          break;
+        case "inventoryId3":
+          await prisma.team.update({
+            where: {
+              userId,
+            },
+            data: {
+              inventoryId3: null,
+            },
+          });
+          break;
+        default:
+          await prisma.team.update({
+            where: {
+              userId,
+            },
+            data: {
+              inventoryId1: null,
+            },
+          });
+          break;
+      }
+    });
+
+    return res.status(200).json({
+      message: `${slotId.charAt(11)}번 포지션을 초기화하였습니다.`,
     });
   } catch (error) {
     return res.status(500).json({ message: "서버 오류가 발생했습니다." });
