@@ -250,7 +250,6 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     }
 
     let messageStr = ""; //message의 String 값
-    let resPointStr = ""; //resPoint의 Sring 값
     let mmr = myUser.mmr;
     let isDraw = false; //무승부 여부
     const enemyUser = enemyInfo.users;
@@ -262,7 +261,6 @@ router.post("/games", authMiddleware, async (req, res, next) => {
     } else {
       messageStr = `'${myScore} - ${enemyScore}'로 무승부 입니다.`;
       isDraw = true;
-      resPointStr = "0 점";
     }
 
     let highMmrChange =
@@ -324,6 +322,8 @@ router.post("/games", authMiddleware, async (req, res, next) => {
             where: { userId: enemyUser.userId },
             data: { mmr: enemyUser.mmr - mmrChange },
           });
+
+          mmr += mmrChange;
         }
       },
       {
