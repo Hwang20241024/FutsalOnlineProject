@@ -156,6 +156,7 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
           inventoryId: value,
         },
         select: {
+          upgrade: true,
           cards: {
             select: {
               name: true,
@@ -166,7 +167,7 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
     }
 
     if(value !== null && cardName) {
-      player_name.push(cardName.cards.name);
+      player_name.push(`${cardName.cards.name} (+${cardName.upgrade})`);
     } else {
       player_name.push("팀원이 없습니다.");
     }
@@ -179,9 +180,9 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
     mmr: myUser.mmr,
     cash: myUser.cash,
     team: {
-      player_01: player_name[0],
-      player_02: player_name[1],
-      player_03: player_name[2],
+      striker: player_name[0],
+      defender: player_name[1],
+      midfielder: player_name[2],
     },
   });
 });
