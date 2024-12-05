@@ -5,7 +5,7 @@ import authMiddleware from "../middlewares/authHandler.js";
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
 
 //팀 편성 API
-router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
+router.post("/teams/cards", authMiddleware, async (req, res, next) => {
   //유저 정보
   const userId = req.user;
   //슬릇 선택, 보유 중인 선수 카드 중 선택
@@ -24,7 +24,6 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
   //const chosenMember = await prisma.inventory.findById(inventoryId).exec();
   //선택된 슬릇
   // const chosenSlot = await prisma.team.findOne(slotId).exec();
-
   await prisma.$transaction(async (prisma) => {
     //중복 편성 방지
 
@@ -57,7 +56,9 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
           data: {
             inventoryId1: +inventoryId,
           },
+          
         });
+        break;
       case "inventoryId2":
         await prisma.team.update({
           where: {
@@ -67,6 +68,7 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
             inventoryId2: +inventoryId,
           },
         });
+        break;
       case "inventoryId3":
         await prisma.team.update({
           where: {
@@ -76,6 +78,7 @@ router.post("/api/teams/cards", authMiddleware, async (req, res, next) => {
             inventoryId3: +inventoryId,
           },
         });
+        break;
       default:
         await prisma.team.update({
           where: {

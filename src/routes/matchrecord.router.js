@@ -10,7 +10,7 @@ router.get("/records", authMiddleware, async (req, res, next) => {
   const userId = req.user;
 
   //사용자의 대전 기록
-  const records1 = await prisma.matchresult.findMany({
+  const records1 = await prisma.matchResult.findMany({
     where: { OR: [{ userId1: userId }, { userId2: userId }] },
   });
   //   //or 같은 연산자로 동시에 묶는 방법은?
@@ -20,10 +20,9 @@ router.get("/records", authMiddleware, async (req, res, next) => {
   //     },
   //   });
 
-  return res.status(200).json({
-    message: `전적
-    ${records1}`,
-  });
+  return res.status(200).json(
+    records1
+  );
 });
 
 export default router;
