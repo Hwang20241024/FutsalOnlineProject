@@ -56,7 +56,7 @@ router.post("/cards/fusion", authHandeler, async (req, res, next) => {
       });
 
       if (randomValue <= 5 + bounsrate) grade = "GOLD";
-      else if (randomValue <= 10 + bounsrate) grade = "SILVER";
+      else if (randomValue <= 30 + bounsrate) grade = "SILVER";
       else grade = "BRONZE";
 
       const cardCount = await prisma.cards.count({ where: { grade } });
