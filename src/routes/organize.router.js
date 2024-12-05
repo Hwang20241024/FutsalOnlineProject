@@ -27,6 +27,11 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
   try {
     await prisma.$transaction(async (prisma) => {
       //미소지 카드 편성 방지
+      if (chosenMember.userId == userId) {
+        return res
+          .status(405)
+          .json({ message: `보유하신 선수 카드가 아닙니다.` });
+      }
 
       //중복 편성 방지
       if (
