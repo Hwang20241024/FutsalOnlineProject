@@ -180,7 +180,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
 
     if(lowMmrChange < 0) {lowMmrChange = 0;} //변동 mmr이 음수일때, 0으로 변경
 
-    if (myUser.mmr > enemyUser.mmr) { //내가 mmr이 높을 때
+    if (myUser.mmr >= enemyUser.mmr) { //내가 mmr이 높을 때
       if (myScore > enemyScore) { //이겼을때
         mmrChange = lowMmrChange; // 승리 시 MMR 증가치
       } else if (myScore < enemyScore) { //졌을때
