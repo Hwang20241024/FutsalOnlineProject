@@ -4,7 +4,7 @@ import authMiddleware from "../middlewares/authHandler.js";
 
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
 
-//팀 편성 API
+/**팀 편성 API **/
 router.post("/teams/cards", authMiddleware, async (req, res, next) => {
   //유저 정보
   const userId = req.user;
@@ -20,14 +20,8 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
     where: { inventoryId },
   });
 
-  //선택된 선수
-  //const chosenMember = await prisma.inventory.findById(inventoryId).exec();
-  //선택된 슬릇
-  // const chosenSlot = await prisma.team.findOne(slotId).exec();
   await prisma.$transaction(async (prisma) => {
     //중복 편성 방지
-
-    //조건 맞는지 확인해야함
     if (
       chosenSlot.inventoryId1 === chosenMember.inventoryId ||
       chosenSlot.inventoryId2 === chosenMember.inventoryId ||
@@ -37,16 +31,6 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
     }
 
     //선택한 선수 포지션 결정
-    // await prisma.team.update({
-    //   where: {
-    //     userId,
-    //   },
-    //   data: {
-    //     slotId: +inventoryId,
-    //   },
-    // });
-
-    //만약 slotId로 못 받는 경우 위에 거 말고 스위치 문으로 시도
     switch (slotId) {
       case "inventoryId1":
         await prisma.team.update({
@@ -88,6 +72,7 @@ router.post("/teams/cards", authMiddleware, async (req, res, next) => {
             inventoryId1: +inventoryId,
           },
         });
+        break;
     }
   });
 
