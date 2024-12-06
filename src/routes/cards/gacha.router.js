@@ -29,7 +29,7 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
   });
 
   //// 한꺼번에 적용하기 위한 변수.
-  let gachaCount = user.stack; // 뽑기 카운터.
+  let gachaCount = user.stack; // 뽑기 스택.
   let userCash = user.cash; // 현재 캐시.
   let cardList = []; // 내보낼 카드 목록.
 
