@@ -207,7 +207,7 @@ router.post("/games", authMiddleware, async (req, res, next) => {
         if (
           isSuccess(
             myPlayers[0].cards.speed + myPlayers[0].upgrade,
-            myPlayers0[0].cards.shoot + myPlayers[0].upgrade,
+            myPlayers[0].cards.shoot + myPlayers[0].upgrade,
             "A",
           )
         ) {
