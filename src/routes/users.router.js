@@ -174,7 +174,6 @@ router.get("/users/me", authMiddleware, async (req, res, next) => {
       player_name.push("팀원이 없습니다.");
     }
   }
-  console.log(mmrToTier(userId));
 
   // 7. 출력
   return res.status(201).json({

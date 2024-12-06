@@ -141,7 +141,6 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
       }
     });
 
-    console.log(cardList);
     // 출력
     return res.status(200).json({
       message1: `[${count}]번 뽑으셨습니다. [남은 캐시 : ${userCash}]`,

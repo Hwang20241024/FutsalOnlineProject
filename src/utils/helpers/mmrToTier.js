@@ -27,7 +27,6 @@ export default async function mmrToTier(userId) {
     const userRank = users.findIndex((user) => user.userId === temp) + 1; // 0부터 시작이니 +1
     const userMmr = users.find((user) => user.userId === temp);
 
-    console.log(userRank);
     // 3. 티어 결정.
     if (userMmr.mmr > 2000 && userRank <= 10) {
       tier = "챌린저";
