@@ -1,6 +1,38 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=300&section=header&text=%EC%95%84%EC%9D%B4%EC%98%A4%EB%8B%89&fontSize=70&textColor=white" />
 
-# API 개요
+
+# 1. Architecture
+
+```
+📦src
+ ┣ 📂middlewares
+ ┃ ┣ 📜authHandler.js
+ ┃ ┗ 📜errorHandler.js
+ ┣ 📂routes
+ ┃ ┣ 📂cards
+ ┃ ┃ ┣ 📜fusion.router.js
+ ┃ ┃ ┣ 📜gacha.router.js
+ ┃ ┃ ┣ 📜inventory.router.js
+ ┃ ┃ ┗ 📜upgrade.router.js
+ ┃ ┣ 📜cardsManager.router.js
+ ┃ ┣ 📜games.router.js
+ ┃ ┣ 📜matchrecord.router.js
+ ┃ ┣ 📜organize.router.js
+ ┃ ┣ 📜ranks.router.js
+ ┃ ┗ 📜users.router.js
+ ┣ 📂utils
+ ┃ ┣ 📂errors
+ ┃ ┃ ┗ 📜customError.js
+ ┃ ┣ 📂helpers
+ ┃ ┃ ┗ 📜mmrToTier.js
+ ┃ ┗ 📂prisma
+ ┃ ┃ ┗ 📜index.js
+ ┗ 📜app.js
+```
+
+
+
+# 2. API 개요
 
 ## 주요 기능 
 
@@ -40,9 +72,14 @@
 
 [POST] **/api/games** : 매치 메이킹 / 축구 게임 / 게임승패/ 점수 조정
 
-# Technologies Used
+# 3. Technologies Used
 ![js](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white)
 ![mysql](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
+
+[![My Skills](https://skillicons.dev/icons?i=nodejs,mysql,aws&theme=light)](https://skillicons.dev)
+
+
+
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=150&section=footer" />
 
