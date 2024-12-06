@@ -1,11 +1,11 @@
 import express from "express";
-import { prisma } from "../utils/prisma/index.js";
-import authHandeler from "../middlewares/authHandler.js";
+import { prisma } from "../../utils/prisma/index.js";
+import authHandeler from "../../middlewares/authHandler.js";
 
 const router = express.Router();
 
 // 카드 강화 API
-router.post("/cards/upgrade", authHandeler, async (req, res, next) => {
+router.post("/upgrade", authHandeler, async (req, res, next) => {
   const { inventoryId1, inventoryId2 } = req.body;
   const userId = req.user;
 

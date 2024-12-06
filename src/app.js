@@ -3,15 +3,10 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import UsersRouter from "./routes/users.router.js";
 import GamesRouter from "./routes/games.router.js";
-import CardsUpgrade from "./routes/upgrade.router.js";
 import OrganizeRouter from "./routes/organize.router.js";
-import GachaRouter from "./routes/gacha.router.js";
 import RankRouter from "./routes/ranks.router.js";
-import InventoryRouter from "./routes/inventory.router.js";
 import MatchrecordRouter from "./routes/matchrecord.router.js";
-import CardFusionRouter from "./routes/fusion.router.js";
-
-
+import cardsManagerRouter from "./routes/cardsManager.router.js";
 
 // 모듈 import
 import ErrorHandlingMiddleware from "./middlewares/errorHandler.js";
@@ -24,11 +19,12 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* 라우터 추가 */
-
-
-app.use("/api", [UsersRouter, GamesRouter, OrganizeRouter,GachaRouter, CardsUpgrade, RankRouter, InventoryRouter, MatchrecordRouter, CardFusionRouter]);
-
-
+app.use("/api", UsersRouter);        // 유저
+app.use("/api", GamesRouter);        // 게임
+app.use("/api", OrganizeRouter);     // 팀편성
+app.use("/api", RankRouter);         // 랭킹.
+app.use("/api", MatchrecordRouter);  // 대전기록.
+app.use("/api", cardsManagerRouter); // 카드
 
 /* 에러 처리 미들 웨어 */
 app.use(ErrorHandlingMiddleware);

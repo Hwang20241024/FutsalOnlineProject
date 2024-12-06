@@ -2,15 +2,15 @@
 import express from "express";
 
 // 모듈 import
-import { prisma } from "../utils/prisma/index.js";
-import authMiddleware from "../middlewares/authHandler.js";
-import CustomError from "../utils/errors/customError.js";
+import { prisma } from "../../utils/prisma/index.js";
+import authMiddleware from "../../middlewares/authHandler.js";
+import CustomError from "../../utils/errors/customError.js";
 
 // 라우터 생성.
 const router = express.Router();
 
 /* 풋살온라인 - 인벤토리 API → (JWT 인증 필요) */
-router.get("/cards/inventory", authMiddleware, async (req, res, next) => {
+router.get("/inventory", authMiddleware, async (req, res, next) => {
   const userId = req.user; // 유저 정보 가져오세요~
 
   // 인벤토리 조회
@@ -68,7 +68,7 @@ router.get("/cards/inventory", authMiddleware, async (req, res, next) => {
 });
 
 /* 풋살온라인 - 보유 카드 상세 API → (JWT 인증 필요) */
-router.get("/cards", authMiddleware, async (req, res, next) => {
+router.get("/", authMiddleware, async (req, res, next) => {
   const userId = req.user; // 유저 정보 가져오세요~
   const { name } = req.body; // 바디 정보 가져오기.
 
@@ -131,7 +131,7 @@ router.get("/cards", authMiddleware, async (req, res, next) => {
 });
 
 /* 풋살온라인 - 카드 판매 API → (JWT 인증 필요) */
-router.post("/cards/sales", authMiddleware, async (req, res, next) => {
+router.post("/sales", authMiddleware, async (req, res, next) => {
   const userId = req.user; // 유저 정보 가져오세요~
   const { inventoryId } = req.body; // 바디 정보 가져오기.
 

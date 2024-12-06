@@ -3,9 +3,9 @@ import express from "express";
 import dotenv from "dotenv";
 
 // 모듈 import
-import { prisma } from "../utils/prisma/index.js";
-import authMiddleware from "../middlewares/authHandler.js";
-import CustomError from "../utils/errors/customError.js";
+import { prisma } from "../../utils/prisma/index.js";
+import authMiddleware from "../../middlewares/authHandler.js";
+import CustomError from "../../utils/errors/customError.js";
 
 // 라우터 생성.
 const router = express.Router();
@@ -14,7 +14,7 @@ const router = express.Router();
 dotenv.config();
 
 /** 풋살온라인 - 뽑기 API → (JWT 인증 필요)  **/
-router.post("/cards/gacha", authMiddleware, async (req, res, next) => {
+router.post("/gacha", authMiddleware, async (req, res, next) => {
   const userId = req.user; // 유저 정보 가져오세요~
   const { count } = req.body; // 바디에서 정보 가져오세요~
 

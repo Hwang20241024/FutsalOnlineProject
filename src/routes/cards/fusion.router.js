@@ -1,11 +1,11 @@
 import express from "express";
-import { prisma } from "../utils/prisma/index.js";
-import authHandeler from "../middlewares/authHandler.js";
-import CustomError from "../utils/errors/customError.js";
+import { prisma } from "../../utils/prisma/index.js";
+import authHandeler from "../../middlewares/authHandler.js";
+import CustomError from "../../utils/errors/customError.js";
 
 const router = express.Router();
 // 카드 조합 API
-router.post("/cards/fusion", authHandeler, async (req, res, next) => {
+router.post("/fusion", authHandeler, async (req, res, next) => {
   const { inventoryId1, inventoryId2, inventoryId3 } = req.body;
   const userId = req.user;
   let randomCard;
